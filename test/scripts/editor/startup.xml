@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AWTTestScript desc="Launch and select a test suite">
+  <component id="JList Instance" class="javax.swing.JList" title="Test Selector" />
+  <component id="Select Test Suite..." class="javax.swing.JButton" title="Test Script Editor.*" tag="Select Test Suite..." />
+  <component id="OK" class="javax.swing.JButton" title="Test Selector" tag="OK" />
+  <launch classpath="lib/abbot.jar:lib/example.jar:classes" args="[]" delegate="false" class="abbot.editor.Costello" method="main" />
+  <wait args="Test Script Editor.*" method="assertFrameShowing" />
+  <action args="Select Test Suite..." class="javax.swing.JButton" desc="Click button 'Select Test Suite...'" method="actionClick" />
+  <wait args="Test Selector" method="assertFrameShowing" />
+  <action args="JList Instance,MyCodeTest - example" class="javax.swing.JList" method="actionSelectValue" />
+  <action args="OK" class="javax.swing.JButton" desc="Click button 'OK'" method="actionClick" />
+  <wait args="Test Selector" invert="true" method="assertFrameShowing" />
+  <terminate />
+</AWTTestScript>
+

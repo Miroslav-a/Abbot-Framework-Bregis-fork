@@ -1,0 +1,1117 @@
+TODO
+----
+Default Swing drag/drop requires select + drag.  Account for that.
+
+It is possible to start a native drag/drop in AWT mode, but it won't be able to
+terminate it.
+
+Center splash on primary screen, not across whole display.
+
+Overall list falls into three categories: basic framework, scripts, and the
+script editor.
+
+These items are only loosely ordered.  See also NOTES for ideas that need some
+refinement and purpose before going into this list.  Anything that stays on
+this list for a significant length of time should either be removed or logged
+into the project page.  These list should be considered for more transient
+use, to avoid bogging down the project bug/feature lists with trivialities.
+
+1.0 Release would like to have the following features implemented:
+
+* user analysis pane: post a dialog with Pass/Fail for visual inspection;
+  maybe derive or augment annotation.
+
+* beanshell: be nice to have an always-available expression evaluator.
+  need to easily access crefs in the expression step.
+
+* include description of currently executing step (in addition to file/line)
+  on error/failure report exception (StepRunner)
+
+* "repair" components after a successful match (under editor only)
+  Probably need different finders for different situations; the requirements
+  are slightly different
+  - 1st recording (sub-step; sample a ref, then later use it/verify it)
+    the only issue with later use is the one test case where the component is
+    un-parented before recording is complete.
+  - subsequent recordings, existing refs
+  - running script, find components
+  - running script, re-finding components
+
+* Need recorder objects for these components:
+  List, TextArea/Field, JFileChooser, JSlider, JSpinner, JSplitPane,
+  JScrollBar outside of JScrollPane
+
+Framework:
+---------
+* add something to fixture to ensure any extant mouse press is released
+* ditto for key presses
+
+* make an extensions jar (JGraph)
+* action steps still have target class name mismatches; should use the tester
+  class name; the target 1st argument class can always be derived.
+  (class passed to Action should be the tester class, not the component class
+  or maybe class usage should be dropped altogether).
+* use JTabbedPane: getIconAt, getMnemonicAt (cf JTextComponent focus
+  accelerator) 
+* maybe move threading/classloading/SM into step runner; then it's shared
+  between script fixtures and the editor.  Want to launch AUT on a separate
+  thread to avoid having to make changes to the current one (i.e. context
+  class loader) and to ensure it's not the EDT.  gives more flexibility to
+  using the class loader (access to it is only required when app is not yet
+  launched). 
+
+* args parser: Recognize ${} as a component ref, property (done), or i18n key
+* i18n: optionally load tags (or variables? ${}) from an i18n file
+  it's up to the user to indicate what key to use, and there needs to be some
+  resource loading configuration as well (maybe just indicate the props file
+  to use).  Specify i18n properties file; auto-replace tags and value strings
+  with keys if the values show up in the properties file.
+* clean up component match (no weights, directly use heuristics instead)
+  Want to find components that aren't necessarily showing; maybe most recent,
+  non-showing.  Clearly delineate cases where components want to be discarded
+  but arent (JOptionPane auto-generated dialogs), vs loss of information due
+  to GUI changes. (partly done)
+
+* make actions wait for specific results instead of idle?
+  (some actions now do this, cf ChoiceTester)
+  this would make the execution of actions more reliable, since waitforidle is
+  not entirely accurate or consistent across all platorms and loads.
+  for actions (instead of waitForIdle):
+  waitForClick(press/release?, comp, x, y, count)
+  waitForKey(press/release, code)
+
+* add mouse wheel support if VM version is 1.4 or later.
+
+
+Script:
+------
+* separate resolver functions from script functions
+* note used refs in a test run, remove unused ones
+
+
+
+Editor:
+------
+* Add an "email/bugreport" option to error dialogs or maybe a showBugReport
+  dialog method.
+
+* add a permanent expression evaluator with a show/hide button
+
+* add drag listener on click?  some way of ensuring drag was actually
+  activated?  dragsource listener, since otherwise recording a drag is *hard*
+  or *impossible*?  (tried adding a source listener, won't work).
+
+* recording dynamically-created menus requires saving a location path, since
+  you won't be able to find the menu component otherwise.  maybe this should
+  be the default method of menu lookup. (partly done w/AWT menus)
+
+* maybe a keystroke to insert an assertion (i.e. during recording)
+  e.g getMenuLabels - how could I insert such a function from the editor?
+  can't select from component tree unless non-menu popups are added
+  probably suspend recording and select a property from a popup list
+
+* component reference editor (new (done), edit (have XML edit), delete)
+  o "AddComponent" button (either by hand (xml) or by selecting a node) (done)
+  o allow renaming of component references (which auto updates script)
+* reference list needs new/delete, disable cut if it's impl as a button
+* component browser should not use hierarchy events if possible
+  ADDED/REMOVED should work, why did we need hieararchy events anyway? (1.3
+  generates no component added/removed events, nor shown/hidden, unless you
+  add a listener).
+
+* need a good command pattern implementation to facilitate undo
+  o encapsulate editor actions into Command objects to facilitate undo/redo.
+  This needs some up-front design work to do it  right, though.
+  Instead of a method call, create a command object and invoke execute on it,
+  stick it on the execute stack.
+  (Pattern is done, need to implement commands now)
+  (need some way of doing this incrementally, but as far as I can see, it all
+  has to be done at once in order to disable undo properly.
+  (cf javax.swing.undo package -- i don't like it)
+
+* Component selection/assertion insertion: pickens has a good method for
+  navigation that could just as well be used for component navigation;
+  simultaneously navigate the component browser, and perhaps provide a default
+  assert insertion command.  This allows setting of assert statements for
+  modal dialogs.
+* Provide launch/edit functions when script is forked (complex)
+  Maybe just do an RMI ala qftest, but on what object?  would need more
+  functions in the step runner.
+* need std scroll pane component (set divider size, background, mouse listener
+  for deselect) 
+  (scroll pane background needs deselect)
+* Capture editor stdout/stderr to a buffer/file (w32 and OSX may launch w/o a
+  console) 
+* provide recorder extension dir, cf. testers; step extension dir, others?
+  need documentation for these; recorders shouldn't be under editor
+
+* verify suitemodel list change events, maybe make them more specific
+* map edit menu onto a) script steps, b) component reference list
+* provide standard GUI controls on argument input for:
+  basic data types (not yet), component references (done)
+* selecting component in tree should highlight border of real component?
+* add a run all button (run all scripts in suite)
+* when recording OSX screen menu bar, translate AWT back to Swing if
+  appropriate (record on OSX, play back elsewhere)
+* boolean tests appearance: isSelected vs !${}.Selected()
+
+
+Docs/Misc:
+---------
+* code export?  Something derived from StepRunner (StepWalker?) that spits out
+  equivalent java code for jemmy, jfcunit, etc?
+* overview docs:
+  - component matching: want minimal set of information to uniquely identify a
+  component, but be flexible w/r/t hierarchy
+  - actions/assertions are finite in number (GUI components are
+  well-defined).  however, combinatorial complexity is best matched with a
+  script to combine individual actions.  each action data object is simply a
+  method invocation wrapper to a well-defined function.
+* SwingSet2 might be nice as a demo, but it doesn't do text or popups
+* Eclipse:
+  - ant target builds StringsBundle.properties into binary plugin zip,
+  but not into abbot/src. This causes a source (CVS -> workspace)
+  user's tests to fail with "java.lang.Error: No resource bundle found
+  in abbot.i18n.StringsBundle"
+  - ant target followed by CVS checkout results in JBP and build errors
+  due to project layout. Fix with resource links in .project?
+
+DONE
+0707xx (1.1)
+* Split into abbot/costello jar files
+* Extract AWT fixture-ness entirely into its own class, divorcing from JUnit
+  TestCase 
+
+0512xx (1.0.0rc2)
+* setAccessible before accessing properties (Call.java)
+
+050221 (1.0.0)
+* step runner needs to only do setup/teardown in tandem with launch/terminate,
+  instead of for any steps run
+* expression needs auto-import of somethings and some default methods; should
+  be able to do "assertEquals" w/o qualifiers.
+* examine ScriptEditor.addPropertyMethodCall; see about proper target class
+  name 
+* extract constants and non-robot stuff from Robot, so that tests that don't
+  need it don't have to validate Robot.
+* Sensible fixture concept: run one or many scripts under the same fixture,
+  w/o defining the fixture in full for each script (brocade)
+
+  (allow reuse of configuration AND/OR running application)
+  (requires fix to ScriptFixture to avoid teardown except on terminate, and
+  then it needs to use the *original* system state, not the current one)
+
+  also, test context: setup/teardown, class loader, thread group, event queue
+  class loader may need to be used prior to actual launch, thus launch needs
+  to be separate from setup (maybe a final pre-run step).
+
+  want to have a suite of all tests; perhaps with same launch; want to be able
+  to run all or run one, and have launch work properly
+  a) each script has a fixture step which is only ever run once until a
+  matching terminate is encountered.  fixture is a script with at least a
+  launch and potentially a few actions.
+  Set a flag on launch indicating "shared"; all launches set a unique
+  system property to detect if it's in effect (can't clear these, though).
+  Derive a fixture step from script; refer to the fixture.
+
+  - pick one scenario to support, then do it:
+  One fixture to launch an app, several scripts to use that fixture.  this is
+  easily wrapped up in code (setup/teardown, run scripts as tests); needs to
+  be easily wrapped up from script editor.
+
+  - ScriptTestSuite should know how to set up/tear down the common fixture.
+    ScriptFixture should not ignore existing components; maybe 
+    ScriptTestSuite sets hierarchy on creation (all scripts should share the
+    same hierarchy -- ScriptTestSuite can determine test harness and fixture.
+
+    run suite or one script: ScriptFixture handles the launch fixture if
+    necessary.  how do you know when to tear down?  want to set up and tear
+    down when one test is run in isolation.
+
+    * run from JUnit runner: may select all or one
+    * run from Costello: run one script
+    * run from ScriptTestSuite.suite: runner traverses suite
+
+
+  NOTE: Need to be able to do the following:
+  * ignore test harness
+  * include existing fixture
+  * don't dispose of test harness or existing fixture
+  * maybe dispose/close windows generated during test
+
+xxxxxx (0.13.1)
+* redo TestCollector to search jar files (I thought I did this)
+* record focus accelerators (alt + character)
+
+0407xx (0.13.0)
+* Use a real scripting language (Jython? beanshell?) to allow more flexible
+  test expressions.  Maybe have a script step which encapsulates a line of
+  arbitrary script code.  Most requests:
+  You *don't* want arbitrarily complex scripts, though, or they lose their
+  utility. 
+  o compare properties: comp2.getA to comp1.getA (e.g. sizes)
+    Want to be able to do comparison tests, eg  maxSize >= 200
+    Want to have access to just-in-time values (for now, these can be
+    tested in the ComponentTester -- args are evaluated when the action is
+    invoked) (done)
+  o conditionals and loops
+  o arbitrary expressions
+  I think expressions are more important than conditionals/loops; at least
+  they're easier to maintain.
+* NB: JOptionPane, JFileChooser need a way of auto-disposing the dialogs they
+  create (listener to WindowTracker?) (done).
+* fix script test suite usage or get rid of it
+* check for "row/col header" component under scroll pane (cf co treetable)
+* handle dynamic components (dynamic text, dynamic menu contents)
+  (no longer generate tags; corresponding matching attributes will have less
+  weight, old tags still supported, for now) (brocade)
+* junitreport (done, should use new ant forkonce), clover (partial)
+* implement component-oriented key actions (done)
+* expression step
+
+040620 (0.12.3)
+* examine ComponentReference "match existing"
+* write tests for known bugs (see abbot.util.Bugs)
+* convert obsolete attributes to updated ones (in script editor)
+  -- if obsolete tags are found (title, tag) refresh the cref (obs)
+* should JPopupMenu instances be a child if the invoker is set? (hidden if
+  filtered). 
+* convert string array "property" into single string in property browser
+* i18n key naming: single string vs property-style format?
+  property-style avoids collisions better and is now preferred (use pmv.sh)
+* More editor tests.  These also serve as examples. (ongoing)
+* how to specify a popup reference in the editor? capture popup?
+  it's in the script and should be saved properly (obs)
+* tutorials:
+  a) simple component test, java code  (ArrowButton) (done)
+  b) same component test, script (recorded) (ArrowButton)
+  c) functional test, script (recorded) (FontChooser)
+* about.html - needs to be more in-depth, theory, etc. (some)
+
+
+040101 (0.12.x)
+* need an editor.html (how to use it, features, tutorial) (user guide)
+* put actual compilable code for tutorials 1, 2 in src/example.
+* add popup component refs to component browser -- have to explicitly grab
+  them, though add them in a separate browser pane
+* method/class resolution: method combo box can't fill in if the class is not
+  yet loadable (maybe make it always loadable?).  maybe make the resolver
+  provide the class loader (prior to launch)?
+* refactor resolver so that it isn't needed on all ctors? (n/a)
+  resolver is now much more important as a general context
+* Provide an Applet step, which automatically creates an html file and
+  launches AppletViewer.  maybe eventually launch a browser.
+* Have Resolver provide a class loader; the current one if the script is
+  running, a throwaway one for reference (method checking) if not.  this
+  allows class lookup even if the code under test isn't running. (partly done).
+* provide a smooth mouse playback (interpolate from current position?)
+  especially important for drags (n/a)
+* add run of applet.xml, MyCode-0.xml, etc to test suite. (n/a)
+* Check out/decompile SunToolkit/AppContext; looks like applet uses this to
+  reload applets (w/some class loading). (n/a)
+* remove string-based modifiers on actionClick (cf actionKeyStroke)
+* remove 1.4-specific classes (JSpinner) (AccesssibleExtendedComponent)
+* crefs/lookup needs to handle volatile text on labels (does w/regexp)
+* Refactor ComponentFinder (see notes.txt, notes from mtrumpler):
+  some stuff is utility: getComponentParent  -- ComponentHierarchy
+  some stuff is lookup: getWindows, getFrames -- ComponentHierarchy
+  some stuff is reference matching: findComponent (done) -- ComponentReference
+  all depends on filtering.
+
+* drop "tag" and use specific stuff instead (label=, labelFor=, access=); they
+  still get weighted heavily, but the "tag" usage obfuscates what's being
+  tracked.  will need to keep tag but deprecate it.
+  text gets more weight in a label than a text field, but who says?
+  maybe XXXTester provides a comparator?
+* clean up remaining cref/finder/resolver/context ambiguities
+* AWT mode: perform tests on a wider variety of stuff to ensure things work
+  properly; maybe run tester and recorder test suites in AWT mode.
+* AWT mode events shouldn't need to get component locations.
+* event exception handler for StepRunner; check for event exceptions between
+  steps? (good enough to throw the error at the end of the test).
+* tests for InputState
+* reset num lock state/caps lock state on startup
+* make sure finder search for frame works within an Applet (should stop at
+  applet?). 
+* change "reload" option on launch step to indicate whether a class loader is
+  used. (no, class loader is *always* used.
+
+
+031115 (?)
+* Run RobotTest once as robot and once as AWT mode (extract robot-only tests)
+* Need to track accelerators/mnemonic events, not sure how; maybe save
+  modifier key in a way similar to POPUP_MASK
+  This may be important to save rather than a direct ActionMap thingy; might
+  want to test whether key mappings are correct. (not likely, can more easily
+  test from code, not script/recording)
+* don't show status dialog if status is entirely within status bar (single
+  line) 
+* separate ComponentReference construction from addition to resolver and
+  validation? 
+* Run RobotTest once as robot and once as AWT mode (extract robot-only tests)
+******************************************
+Locations: DONE
+NOTE: the component part of the location was dropped to avoid complexity in
+actual usage.  neat idea, and makes base Robot usable by SWT, but that seemed
+a marginal gain.
+
+Any action has a location which may be specified by one or more coords, or by
+"value":
+Point: (x, y)
+Cell (list, table): i, (r, c)
+Row/path (tree): i
+
+How can I represent the locations without multiplying the number of routines?
+Have the method represent the action, have one argument represent the
+location, which may be one of several types.  Otherwise the routines rapidly
+explode in number with the addition of location type, button mask, click
+count, and show/select popup options. 
+
+Location extends Point - recognizes x, y only (maybe multi-display?)
+  (LocationConverter does 'new Location(string)'; needs a new converter per
+  location type)
+Variants: location vs value, new location (cell, item, path), popup for that
+  location.   Avoids repetitive addition of methods.  Allows combination of
+  AWT/SWT base class.
+
+Location("(x,y)")
+ComponentLocation("(comp,x,y)")
+JTableLocation("comp<r,c>"|"value")
+JListLocation("comp<i>"|"value")
+JTreeLocation("comp<path|to|item>"|"value")
+JMenuLocation("comp<file|new|document>")
+
+Any new action requires three variants (instead of six):
+actionClick(Location, int mask, int count)
+actionSelect/ShowPopup(Location, String path)
+actionClick(JTableLocation)
+actionClick(JListLocation)
+actionClick(JTreeLocation) 
+
+ComponentTester can provide conversion from String "(xxx)" to the most
+appropriate Location object (do it in ArgumentParser via LocationConverter).
+I guess the recorder generates the original string?
+NB: "converter" should be "parser" (done)
+
+How to transition?  just need to modify method lookup to ensure sub->super
+ordering.  Ensure proper Location type lookup (ctor(String)).
+NOTE: revised Action evaluation of parameters to handle Locations.
+
+* tests for drag, drop, popup menu on substructure
+* implement "Location" for tester objects, rather than the argument mash that
+  currently exists.  How best to move forward? patch existing scripts?
+  maintain backward compatibility?
+
+  (findActivePopupMenu should be moved to AWT)
+
+  pros: fewer methods on derived classes
+  cons: more methods on base Robot class (if old methods not deprecated)
+
+  maybe only do Locations for derived classes?  possibly move them up if
+  necessary or sensible to do so.  Otherwise, only use Location for Tree,
+  Table, etc (much less impact).  Also doesn't affect existing scripts (except
+  for Tree, Table, etc).
+
+  (distinguish between methods with same number but different args; specially
+  handle ComponentLocation args in Action step).
+
+0308xx (0.10.x)
+* run from, run selected, step (run selected covers this)
+* set up args doc format for actions; parse doc format to do GUI editing
+  display;
+* Recorder saving component references slows things down on clicks a *lot*.
+  I doubt it'll be noticable in normal use, though.
+  -- note: this indicates that the slowdown previously seen means that adding
+  component references gets progressively slower, even without adding more
+  components (it doesn't help that we do a linear lookup).
+  (optimized)
+* show help for component tester actions in step editor; show help for any
+  arbitrary method args (CallEditor)
+* load action description properties directly from an extension bundle; don't
+  require setting system properties (now loaded from javadoc).
+* execute only selected steps
+* need to provide for both pwd and script directory "properties" in classpath
+  ("." = same directory as script, "$pwd" or "${user.dir}".
+  (${user.dir} is explicit; relative paths are relative to script parent dir)
+* event queue, programmatic/AWT implementations of actions
+  - event queue stuffing and programmatic means no display is required
+  - not as complete as robot events (also kinda tricky)
+* test component finding (by parent/index) (DefaultComponentFinderTest)
+  see also "component lookup" in NOTES
+  - verify speed in large hierarchies
+  - verify multiple matches
+* classloader: if using java.class.path and not reloading, don't use a
+  separate class loader.  If not reloading, always use the same class loader.
+  Basically need a "no class loader" option.
+0307xx (0.9.x)
+* cleaned up component matching by putting it into ComponentReference instead
+  of ComponentFinder
+* 'title' attribute should instead be 'rootWindow' or some such and use a
+  reference instead.  (use "${ref}" in title attribute?)
+0304xx (0.8.5)
+* make call invocation catch its result in a property if asked to (Sample)
+* event exception handler: currently installed by launch; probably ought to be
+  installed by StepRunner instead (cf ComponentTestFixture). (the one who
+  needs to catch the exception is the one to install it).
+* put insert... into "Actions" submenu (ala wait/assert)
+* improve arguments input (needs docs)
+  need better argument input for method args
+  pre-fill arguments input when first arg is a component
+* clean up extra keystrokes around image capture recording
+  make editor call events out to recorder; this gives an appropriate
+  pre-filter, so the recorder doesn't have to duplicate all filtering.
+* table model, on step change, make sure seq change propates to all sub rows
+* report file/line of error (not necessary in editor, but useful in junit text
+  test runner.
+* control recorder directly; don't need threading
+* Recorder/SemanticRecorder is in sore need of refactoring, but the necessary
+  pattern is not yet clear.  The plugin-like structure seems to be the right
+  idea, but the Controller part is muddy, as is the right fixture for
+  recording tests.
+* don't need hierarchy listeners?  use component_shown/hidden
+* clean up properties (Strings.get)
+* select, group steps into a sequence
+* filter out methods getTag, getTester, etc.
+
+0212xx (0.8.3/4)
+* capture window closing on frame close (can it be distinguished?)
+* component script test fixture
+* property table should include properties made available by the
+  component tester, e.g. getMenuLabels (cf CallEditor).
+* waittimedout, actionfailed, componentnotfound?  which is preferable when an
+  action fails?  (actionfailed)
+* NOTE: figure out implications of "threaded" launch - is there any other than
+  for capture?  launch must be threaded in order for script to continue
+  executing, i.e. sending events to the code under test.
+* move utils into separate classes.
+  - Parts of component tester (field lookup/translation)
+  - simple class name
+* Applet security manager must be loaded w/same class loader as AppletViewer
+  to avoid class cast exceptions by the applet viewer
+* Does step runner need to handle threading on launch/run? (it does)
+* Is it possible to provide a class loader that can reload the framework?
+  May only need to fix DefaultComponentFinder (push and pop).
+
+* derive class loader properly from URL class loader;
+  NOTE: still need some funky loading when the framework is testing itself; it
+  needs to be loaded by the system class loader *and* the dynamic loader.
+  also, loading custom testers need to be loaded by the dynamic loader.
+* class loader: needs access to framework classpath for 1) extension testers
+and 2) event thread exception handlers
+NOTE: handler can read in the property and attempt instantiation on its own,
+using the proper class loader.  Tester class loader can know about the abbot
+classpath. 
+ o Installing event exception handler - can it be done from an event handling
+   thread? (simpler to preclude it!)
+
+* preloading class loader for use pulling in class from java.class.path
+(custom tester) or sun.boot.class.path (applet); member of X class loader
+derives from PathClassLoader, but doesn't delegate.
+* may need to install a no-exit security manager on regular test runs
+* testers for call step method lookup
+* component test fixture
+* steps w/o stop on X should throw at end of script
+* NOTE: dispose followed by show (w/o pack) generates no open events,
+  but it's a programmer bug, so don't bother trying to account for it
+* All class resolution in a script *must* take place under any custom class
+  loader.  currently this is an issue when attempting to fix up deprecated
+  method name usage in Assert.
+* actionClickX versus actionSelect: select provides user action, actionClick
+  simplifies programmatics (there is a semantic break between a click, which is
+  *usually* a select, and a multiple click, which may be almost any semantic
+  event.  Resolution: Provide both.  while actionClick and actionSelect may do
+  the same thing, one represents a user action while the other provides more
+  basic access (sort of robot, but available to the script).
+* peek next event for recorder: a) multiple click b) drag 
+  write test to detect event lag between (doesn't work, no events available)
+* don't have hierarchy browser listen to hierarchy events -- 1.3 is bad w/r/t
+  NPEs 
+* don't capture resize, move, drop, etc. on launch (when window not actually
+  visible). this shows up worst on linux, but also on 1.4.x
+  - track windows for a showing list; ignore those not yet showing
+* add full stack trace to error "dialog"
+0211xx (0.8.2)
+* Need to track components with InputMap/ActionMap, to indicate a special
+  event type which says to generate whatever event is required to invoke the
+  recorded actions (e.g. copy/paste functions on text components).
+  Rather than recording the event itself, note which action is being called,
+  then look it up in the action map on playback to see what key to use.
+  (generation done)
+* if no editor, use xml editor, otherwise script model should report not
+  editable. 
+* move script parse errors to throw when the step is run, not when it is
+  parsed (e.g. Launch w/ no classname)
+* is ScriptTestCase superfluous?  Get rid of it and just provide
+  ScriptTestSuites?  Maybe just call it ScriptFixture instead.
+* don't need API for both Error and Failure (this was copied from JUnit).
+  Having only one throwable is better, since we only ever have one or the
+  other.  Anyone interested in the difference can examine the Throwable. 
+* make all steps extensions: Step.createStep should load classes dynamically
+  based on the tag name (cf ant tasks).  This makes it possible to do "if" or
+  "loop" steps that define their own behavior.
+* Provide a method for specifying classpath outside of Launch 
+  - (java.class.path is sufficient).
+* Fix launch threading/step runner to catch it; need to get classloader from
+  threaded launch.
+* Fix up dynamically loaded steps.
+
+* Text selection, action maps (cut/copy/paste)
+* need to provide a better programmatic interface to ComponentFinder
+  (ComponentReferences are great for scripts, but harder to create in-line in
+  code).  e.g. findComponent(name) or findComponent(tag)
+  - ctors for ComponentReference
+* Disable all components on "Run"; re-enable when test finished
+  extend this in the interface so that the IF knows how to respond to
+  selections, running, recording, etc.  what the proper design should be is
+  unclear. 
+* Make long errors/failures readable in status bar (double-click for a
+  "floating" popup), or maybe a disclosure pane.
+* image capture
+  a) capture and compare (done, 3hrs)
+  b) record desired image, supply image compare step/assert
+     recorder needs suspend/resume, insert
+     editor needs to record image capture independent of recorder
+  NOTE: what about components in scrolled panes?  don't want to use full size
+  of component or will capture other stuff.
+  NOTE: what about selections?
+
+021104 (0.8.1)
+* classloader definePackage?
+* should probably send CLOSE events to windows now, instead of simply
+  disposing them. 
+* steps need refactoring to remove a lot of the old method invocation cacheing
+  stuff. 
+* on w32, < 1.4, check for button/speed mapping, and warn if not correct
+* classloader definePackage?
+* See about hierarchy events to avoid lockup (see example)
+* TestCaseCollector needs work (it's from junit) to load from a custom
+  classpath and from jar files.
+* put failure text next to step, extend row height to fit text? (no)
+* finish runto.xml test (wait for script to run)
+* recorder needs to handle input method events
+* merge string input, store modifier-based keystrokes as keystrokes instead of
+  key_typed string input.
+* input method event generation/tracking
+* Robot.focus may need to bring the parent window to front; requestFocus
+  won't change window activation.
+* Fix input method bug (recording)
+* Don't load anything from the bootclasspath unless specifically excluded
+  (instead of using the "excluded" properties).  this should avoid most class
+  loader conflicts.
+* On text input, if given character not found in key map, stuff a KEY_TYPED
+  into the event queue (useful for characters which require InputMethod)
+* appletviewer: AppContext for the applet provides a different set of frames.
+  I don't think there's a way to enumerate the contexts, or switch through
+  them, but each one has a new event queues with an associated thread.  If the
+  applet context only is to be searched, the applet itself should be included
+  even if its containing frame is omitted.
+
+  the queue is only available via Toolkit.getSystemEventQueue when on the
+  corresponding dispatch thread; there is one thread per queue installed.
+
+  when does the AppContext change?  apparently with the running thread; does
+  this mean we need to thread-hop to the correct context? or maybe somehow
+  chain finders, or have the finder put a listener on the context thread to
+  capture those components.  maybe an invokeLater on the applet context
+  thread... 
+
+  Can't thread hop with invoke and wait; need to install a separate thread
+  (launched from the event handler) and message to it.
+
+10/X
+* Assert: current "guessing" of method names is wasteful and not really
+  necessary. why not just save the actual method name?
+  why save partial method names?  it's easy enough to modify them in
+  descriptions, but it's easier if we don't have to look them up by
+  variations.   maybe should keep is/get (ok to drop "assert").  Maybe make
+  component/property assertions a different step class.
+
+  assert X (component tester)
+  assert X (specific component tester class, component arg)
+  assert property == X (component arg)
+  assert property == X (component arg, provided by tester class)
+
+* wait steps should be an option on a basic assert; then assert can be
+  extended to provide more variety (e.g. image matching)
+* i18n support for messages
+* AWT support (MenuComponent) this is tricky; want to do this w/o having to
+  add a parallel set of methods on everything that accepts a MenuComponent.
+  maybe just a dedicated record/playback:
+
+  selectAWTMenuItem(String)
+  recorder looks for MenuBar events
+
+  Probably need something for AWT PopupMenu as well.
+9/X
+* change in editor propagates to script model (model needs to listen to
+  current editor?)
+* add a "comment" script step (preserve XML comments)
+* in XML, put args into method, i.e. method="Click(100)" (nope)
+* better editors
+* applet/security manager interaction; should install a real security manager
+for applets, or at least the one that AppletViewer expects.
+* clean up threads in terminate; unfortunately, can't do this w/o cooperation
+  from the threads themselves.  fork gets around this.
+* Need script tests!
+* fix xml output to do real xml instead of constructed strings (maybe use
+  jdom). 
+* read/write files in the proper encoding, and figure out why it doesn't work
+  in other locales.
+  files should be UTF8 as should be any toXML.
+* slow playback option (for demos); tests/scripts can set the property 
+* 1.4 doesn't use CTRL_MASK on tertiary button click
+* provide a "forked" script, which launchs another VM with a stub class; use
+  socket communications to send step events back; script adds a listener to
+  the launched process and recreates the events to pass up the chain as if it
+  were actually running.  exceptions aren't totally kosher, but they could
+  either be serialized or just encapsulated in a string.
+  This would provide an alternative for launching stuff that just won't work
+  with the reloading class loader.
+* refactor Step such that ComponentFinder and resolver only appear where
+  necessary in other subclasses.
+* add a way to set/override a tester (addTester); current cache is in
+  DefaultComponentFinder, which is probably not the right place.
+* Write a test that has an extension tester in the abbot classpath (app class
+loader) which tests something in the dynamic loader classpath.
+* class loader
+  - refactor to TesterClassLoader those pieces that deal with testers
+  - load extensions from java.class.path if not found in loader class path
+8/X
+* popup close action? for now, click somewhere else, or ESC
+* support for displaying editor message dialogs
+* add delay interval pref for playback to editor interface (added to tester)
+  (not needed)
+* make editor able to change classpath, custom loader...
+* include/library:
+  start server, login, create model, shutdown
+* If component class is an os-specific class, save its
+  superclass instead (e.g. com.apple.mrj.swing.MacSplitPane...) (use
+  properties to identify what these classes are) 
+* double check component reference uniqueness (class + title doesn't seem like
+  it'd be enough...). 
+* "Editable" interface, provides cut/copy/paste/select all actions, or maybe
+  more generally, an Actionable interface.  Switch to source on focus change
+  events?  (use Command pattern instead)
+* maybe add a "launch" field to editor to launch arbitrary stuff by hand
+  (not needed)
+* SemanticRecorder should derive from Recorder? it should certainly use
+  single-action-recorders instead of all code being in-line; currently the
+  code is duplicated in the single-actions and the semantic recorder (semantic
+  recorder is newer).  Need some redesign in order to make reuse possible,
+  though. 
+  Semantic recorder could use a test which sets up a series of awt events to
+  verify proper parsing; that way any particular stream of awt events can be
+  captured and replayed w/o depending on the ComponentTester to generate the
+  actions (which, depending on the system, may or may not result in the same
+  stream). 
+
+  Two interfaces currently for recorders:
+* IF1: semantic recorder: capture exactly one semantic event
+    accept, recordevent, isFinished -- use regular recorder to capture event
+    once it is recognized
+    Recognizer, Trapper, Capturerer (record -- accept decision has to be at
+    least partly in recorder)
+
+  IF2: event recorder: use semantic recorders as needed
+       choose semantic recorder: keep feeding events until SR X has captured 
+    record, recordevent, shouldStop (record, pass off events, get step)
+    Recorder, EventRecorder
+
+* merge recorder with Tester? actions correspond to a component, as do
+  assertions; extend basic one with special parser for all action record, as
+  well as specific record actions (do we need specific record actions --
+  basically what they do over the global one is weed out other actions).
+
+* need to clean up open/activate/close recording.  Maybe should record
+  open/activate separately and let EventRecorder prune duplicates.
+  need more experience with open/activate to characterize it better so it
+  works cross-platform.  maybe ditch activate altogether and just put in an
+  explicit focus prior to keyboard events.
+* close, iconify, deiconify frame
+* set robot auto-delay to zero and manually insert delays between robot
+  commands, since the api doesn't provide direct access to the underlying
+  robot. 
+* close for robot/actionClose for Frame/DialogTester
+* clean up window show/hide capture, separate it from activation recording
+* update main API doc page to make it clear that tests can also be written
+  directly in java.
+* strip CTRL mask from w32 TERTIARY button events
+* fix class path separator on w32 (: is part of path)
+7/X
+* make reloading class loader optional, perhaps with "reload" tag in launch
+  step.  still need a custom class loader to capture the class path, though.
+* defer class loading in Assert, Action, ComponentReference
+* try to resolve class loading issue
+* remove some ComponentFinder methods used only once
+* Component weighting (kgirard):
+  component lookup weighting (match/mismatch/missing):
+  for match values, score should reflect how hard is it to get an accidental
+    match on that item
+  for mismatch values, score should reflect how hard is it to get an
+    accidental mismatch on that item
+
+  tag 25/-/- (required) (system-provided; likely to change only with abbot
+    changes). 
+  component class 1/-/- (required)
+
+  name 50/-50/0 (user-provided, highly unlikely to change)
+  invoker 25/-25/0 (but only used for popups)
+  parent 25/0/0 (parent somewhat subject to change)
+  index 25/0/0 (index highly subject to change)
+  window 10/-10/0 (window less likely to change)
+  frame title 10/0/0 (titles can change, may not have a title)
+    (parent, frame, frame title are roughly equivalent; only one
+    of the three should be saved)
+  others?
+
+* maybe use component.toString for matching components
+  Resolution: use weights (kgirard).
+* execution: flag errors and failures;
+  on error/failure, optionally terminate sequence
+  Abort current sequence, continue with next step?  how best to set flags?
+  what's the best default?  error in a sequence makes that sequence stop, but
+  it's parent executes the next one?
+  Probably only want top level to proceed on failure.
+  Resolution: Default to stop on error/failure, option to continue.
+* text, (not key input -- ESC) and click; maybe drag need to be parsed
+  by event recorder. (text - multi-line vs one-line (VK_ENTER)).
+* Do each launch under a separate VM and use a remote connection to send/track
+  events (this is a big chunk of work).
+  (NOTE: this is less of an issue with the reloading class loader).
+* maybe allow a launch to be created, but mark it yellow or red if it's
+  invalid (not now, it's enough tracking valid ones...)
+  Resolution: missing class does not cause a failure until the step is
+  executed, which means missing classes won't cause the script to fail to
+  load. 
+
+6/X
+* refactor GUI
+* make event recorder get text input
+* capture all modifiers separately from keys; actionKeyStroke or
+  actionTextInput is for convenience when you need specific text.  Otherwise
+  captures should just capture individual key typing (maybe compress them
+  into KeyStrokes later as an optimization)
+* linux has a frame not filtered on startup
+  what is override redirect? (sounds like X...)
+* invoke request focus vs move mouse and maybe click if component doesn't have
+  focus? (only when there's a focus gained?)  Maybe only need an explicit
+  focus action on first component after a window activate?
+  provide a property for pointer vs click focus?  dynamically figure it out?
+* two scripts find multiple components (mycode-1.xml, size-change.xml)
+* drag & drop should be provided by secondarily invoking "Drag" or "Drop" by
+  other event (provide in base SemanticRecorder or something).
+
+5/X
+* make event stream smarter.  first do semantic captures, then see if it can
+  reasonably be abstracted for extensibility
+  NOTE: I think parse has to be real-time, in case we need to query a
+  component. 
+  For now, make eventrecorder do dynamic lookup of SemanticRecorders
+  (e.g. <Component>Recorder).  It controls the state machine.
+
+* need a generic state machine controller (eventrecorder) for starting
+  semantic event tracking.  Post-processing won't work b/c we need access to
+  components' current state (e.g. jcombo box, lists).  Will probably need
+  look-ahead, though I'm not certain.
+
+  Instead of look-ahead, pass off event stream if drag & drop is detected
+5/22
+* release source
+* tests for semantic events (all basic except DND)
+* mouse jitter restricted to OSX
+* relative script inclusion
+4/15
+* add listeners to item selections to activate/inactivate menu/other actions
+* component tree not always refreshed
+* add string properties to assert/wait methods to describe arguments
+  required for method invocation.
+* add a cursor to the script editor table
+* move step up/move step down buttons
+* all records need ESC to cancel -- maybe provide default, override when we
+  want a different cancel. 
+* edit sequence xml
+* show component tag in browser tree itself
+* linux needs to have frame0->canvas0 filtered on startup; not clear what
+  these components are or why they're there.
+  maybe filter everything prior to "launch".  note that option dialogs are not
+  filtered.  canvas0 (subclass of Canvas) isn't properly tracked.
+  (filter everything on startup)
+* need to insert arbitrary steps: <action method="" [class=] args=""/>
+  regardless of "selected component"
+* Action docs: icons are named after action method; other info stored as
+  properties 
+* if frame has a name, use that over its title
+* Make the editor independent of junit; test case supplies setup/teardown and
+  launch resources; these could be optional script steps.
+* review QuickKeys
+
+4/14
+* cancel recording on run/launch/term
+* insert step at front/head of script (cursor)
+* never insert after Terminate (cursor)
+
+4/8
+* skip mouse motion (even drags) on event recorder, as long as menu selections
+  are detected (target of mouse press/release)
+* equals/hash was there 'cuz script table holds references ?
+* probably want to still be able to edit a script even if it's not in the
+  current suite (open menu) vs popup.
+* default terminate in script? only if launch? explicit step?
+  o new scripts have, by default a "launch" and "terminate" step (editor).
+  o makes scripts independent of test cases (ease of use), don't have to write
+  testcase code.
+  o test case only does dir, prefix, which probably need to simply be part of
+  the testsuite anyway.
+* pares events from event stream; compress mouse motion
+* use ant; then use ant on browser (yuk!)
+
+4/3
+* don't use setup/teardown.  always use launch/terminate for GUI stuff;
+  otherwise we have to guess whether setup/teardown includes any setup, or
+  avoid calling it if it's already called in launch, just too messy
+* split manager; really need separate finder and resolver
+* selecting a component reference is *really* slow (probably walking tree)
+  maybe only select in hierarchy if hierarchy is showing
+* update cref table whenever script context changes
+* how are crefs from sub-scripts handled?  (maybe only in context? need
+  chaining).  when a script is loaded, it sets the resolver on the component
+  manager; for sub-scripts, this overrides the current one, and it's never
+  re-set. 
+4/2
+* equals/hashcode for steps, components
+* sometimes after run all windows not disposed (causes next run to fail)
+4/1
+* Add a description attribute to AWTTestScript
+  Scripts need a descriptive comment, to explain the script's purpose
+* cref list, selection auto-selects component in tree, highlights real
+  component if available.
+* associate icon/html with each action
+* example using font viewer? (i.e. test gui component vs full app)
+* equals/hashcode for steps, components
+* editor needs to catch System.exit() on window closing; this can be done with
+  the SecurityManager by causing checkExit to throw; might or might not be
+  caught by the app, and probably still have to dispose windows.
+* rework some launch/setup/teardown stuff; add FontChooser example
+3/28
+* select menu item action needs timeout
+* component browser needs repaint
+* windows not disposed after test run of MyCode
+* Sequence needs to have listener for step events (move step listener stuff
+  out of script, into sequence).  Maybe play all steps by hand (requires
+  knowledge of internal test invocation, but so what?
+* need to clean up script step exception throwing/handling
+  -- invalidscriptexception should be thrown on xml parsing only
+  -- other ctors should throw illegal argument exception
+  -- don't throw invalidscriptexception at runtime
+3/26
+* Fix some filtering issues
+* click on component selects it in tree and cref list
+* make sure rename of script results in a script that will still be found!
+3/24
+* hierarchy + reference browsers
+* Step.fromXML, so we can parse user input
+* edit existing component references as XML (eventually do custom editors). 
+* add new steps w/o gui being visible, i.e. select component from registered
+  components list, or add new ones, set up actions
+  generally need to facilitate writing a script from scratch:
+  add component references
+  add "insert" items
+* single key action
+* save before launch, since testcase reloads script; probably need dialog
+* editor listen to window closing events; if no more windows are showing,
+  dispose them?  or dispose just prior to invoking setup? 
+* add component-specific tester actions/assertions to browser
+* base editor doesn't filter windows launched by tested editor (fixed)
+* edit script lines xml; maybe double click on column 0 gives you editable xml
+  in column 1 (only in that row; other rows are empty).
+
+3/22
+* make string matches regexp
+* don't include title if window title is apt to change!  i.e. exclude wherever
+  possible, esp. if a tag is available.  need regexp match
+* make match window title optional or regexp
+* add regexp matching
+* anonymous classes save parent class
+* edit xml for actions/assertions in-line
+3/20
+* sub-editor closes itself when running smoke test (fixed)
+* Run testcase script-2 reverts to -1! (scriptsave, most likely)
+* use weak references to facility GC of disposed frames
+3/18
+* script include support (maybe <script filename="">)
+* better load/save on a per-script-step basis
+* script elements:
+  record add one event at a time; need to figure out how to do high-level
+    actions... 
+  ignore enter/leave/motion events
+  provide editor
+  provide standard "wait for frame" et al.
+  provide standard aggregate actions (how?)
+* make actions, waits, etc factory-generated
+* script editor:
+  main class + launch button (done)
+  capture events (ignore self) (done)
+  add actions to script (insert at cursor)
+  add events to script (insert at cursor)
+  record + play + stop
+* maybe subclass Assert (sort of do this; see lookups in componenttester)
+  we have assert-property-value, assert-x, and assert-component-x
+  Assert.createAssert(Element el)
+   Assert, AssertProperty, AssertComponent
+* maybe make Resolver a converter instead?
+  no, changes with every script
+* need to get a tester based on a component; can't readily tell if the tester
+  method needs a component -- maybe use a flagged method name?  
+  assertComponentX?
+* need a component-specific popup identifier, x,y works for some, but a table
+  might have a custom popup per-cell (extensions?)
+  should then be provided as an action!
+* move non-component tests to AbstractTester NOT
+* package it up, check it in
+* map keycode values back to constants, save as constants
+* reexamine naming.  do i really need AWT prefix everywhere?
+* "Run" should invoke teardown if necessary prior to starting
+* load script in background, espectially on testsuite change; otherwise it
+  takes forever for a button click to actually register, b/c we're in front
+  of it doing a bunch of gui updates.
+* script editor needs to handle sequences
+* do toFront when recorder finishes
+* linux jcombo box slow to update to renamed script
+* fix bug setting current selection (script not fully loaded)
+3/17
+* menu selection causes browser to collapse
+3/16
+* save doesn't work (doesn't write contents)
+* after save, 3 new scripts created and loaded
+* save should not terminate
+* wait on property value or other component test
+* fix suite/script loading
+3/15
+* tree view
+3/14
+* need to input extra args for actions/verify/wait; do so by scanning method
+  arg list
+* action stream (requires action factory)  note: don't need to do passive
+  actions! only moves, clicks, & keys, maybe wait for window
+* event stream (wasn't setting modifiers, probably same issue with AWTevents)
+* tests (how is this best integrated into the GUI?).
+    For each component type, provide a ComponentTester, which has common test
+    methods for that component. 
+    Worry about extensions later -- do basic methods first.
+    FIXME add support for basic script->function mapping
+    FIXME add support for extending the basic mapping
+3/12
+* need an invert toggle for assert/wait
+* toFront(false) -- much more convenient
+* "JButtonInstance" saved twice; second time overwrites first; id should
+  default to tag, if possible
+* menu/action generation is easier
+* ScriptStep factory
+* add assert->component on component (tester)
+* add assert->base (componenttester)
+  these can be auto-generated to select from
+* change verify/wait lists based on selected component
+* make a test collector to provide choices amont test case classes (cf junit)
+* cut action
+* new script (can't get suite to reload)
+* windows aren't cleaned up after a test run (although subsequent tests seem
+  to run ok). maybe browser is not updated properly
+  was a duplicate component finder
+* keystroke
+* should script close all windows on failure?
+  this is default behavior
+* what's the best way to select a component? modals cause problems
+  for now, use browser
+* add popup menu selection recorder
+* add assert->property check
+* use AssertEquals et al on failures; catch these in the editor
+  use Assert.fail() where appropriate to make the test fail.
+* ideally i'd like to run the script editor itself through the tester
+* catch Assert.fail in editor, show in dialog
+* put all filtering into the editor, so that it's contextual
+* maybe don't need launch script; set static launchmethod if it's null, and
+  don't invoke laucnh method if it's the same as the static one.
+  'cuz the only thing in a launch script right now is the launch step
+  (resolved by useing setup/teardown)
+* maybe merge recorders with testers
+  added componentmanager to combine resolving and lookup/filtering
+* AWTTestCase should return number of script steps as number of tests...
+  (handled in listener now, don't really care about JUnit gui)
+* script editor should load a testcase/testsuite; gathers a group of scripts
+  for easy selection.  testcase also handles setup/teardown.
+  Run only one script/testcase at a time, no bulk (use junit for that)
+  Use "suite" to get all tests
+* setup/teardown invocation, invoke testcase now works, scans all scripts
+* spent a lot of time integrating with JUnit, getting grouping to work,
+getting things to work under the JUnit gui.
+* need to omit junit from componentfinder
+* group scripts optionally run under the same GUI instance
+  Alternatively, a TestDecorator can wrap a suite of tests
+* popup select, popup show/check/popdown
+* need assertEquals to display expected vs actual values
+* don't auto-close windows; let editor or script do it manually
+* Can't run script after run class, not filtering, I think
+* make XXX-launch/xxx-terminate scripts; these are put at start/end of
+  auto-generated test suite
+  if intermediate scripts have same start/terminate, remove it 
+  this way they can be run standalone or with a group
+* add launch/terminate script options
+* parse array arguments (not yet processed in eval)
+* recorder needs to display status
+* match component with component tester instance
+  also use parent window title (usually ref parent == null to match anything)
+  this way only need to track frame/dialog refs instead of all components
+* prefix Testers with an extension package name
+* make start/stop script steps
+* need to fix component naming; don't want components renamed after loading
+  want to match up existing components if possible (don't generate new ones)
+  resolve saving name/id (uniqueIDs)
+* Run fails from within editor (dialog button not pressed); need to exclude
+  editor windows from ComponentTester search 
+* can test arbitrary properties now, including toString reps
+  (assert maybe auto-generate on getX/isX?)
+* wait derives from assert
+* package-ified
+* added converters
+* put main class in script; AWTTestScript exports a function to get it
+ Eventually use reflection to provide custom
+
+MISC IDEAS which might have merit but don't have an immediate problem to solve
+* store an index with windows, identifying them by order of appearance.
+  o for any given test, this should be invariant, and used with more weight
+  than title.  this doesn't work with multiple tests, though, or tests that
+  share component references.
+* store titles as a reference (for component references). tie title to a
+ component and watch to see if the title changes.
+  o mutable frame titles cause problems; one solution is a list of patterns and
+  the actual string to use as title.  hard to auto-capture the right pattern,
+  though. 
+  o put a property on a window whose title is in use; when that window is
+  closed, check the title against the property and change the title reference
+  to a regexp if it's different, or remove it altogether if there's no
+  recognizable pattern.  check window on close, if its different do a diff and
+  generate a regexp.
+* make tags regexp match (in case of dynamic labels, titled borders,
+  accessibility, etc).  can we auto-detect changes made to these elements and
+  auto-apply a regexp accordingly?
+* write something that under X11 will report the WM in use
+* Save clicks as a % within the component space.  This is probably somewhat
+  more accurate than the current fallback.  Could save as "NN%" in xml, then
+  convert to use negative numbers as the actual values.  or maybe just
+  implement some extra FP versions...  Not a big payback on this, though.
+* Add a list of external resources (image files) so if the script is renamed,
+  the files get moved.  Maybe save the original path in the script so it can
+  do some tracking if moved in the FS.
+* optimize scripts to strip out unused component references
+  (this is required to support add/delete of component references)
+  Need to scan arg0 of all MethodInvocations (actually, probably all args of
+  all MethodInvocations, since some action might have two args); also all
+  WindowID and ParentID fields of other references (need same reference
+  scanning techniques as GC).
+
+
+OBSOLETE
+* editor needs to catch when MRJ handlers are set so they're not overwritten
+  (maybe use security manager to catch them)
+* EventRecorder: save AWTEvents instead of SendEvents, then when parsing,
+  create the real events.  This'll make it easier to parse for coalescing.

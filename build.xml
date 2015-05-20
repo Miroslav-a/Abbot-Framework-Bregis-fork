@@ -1,0 +1,876 @@
+<?xml version="1.0"?>
+<project name="abbot" default="default" basedir=".">
+  <description>
+  Abbot build file (Ant 1.5+)
+  Conventions (since ant can't easily specify arbitrary file dependencies):
+  The uptodate property for a given target TARGET is "-TARGET"; the actual
+  target to generate the uptodate property is named ":TARGET".
+
+  Properties (except for uptodate properties) separate words by dots, targets
+  separate words by dashes. 
+  </description>
+  <!-- global properties -->
+  <!-- This is the master version number.  Changes here affect everything. -->
+  <property name="abbot.version" value="1.4.0-SNAPSHOT"/>
+  <property name="copyright"
+    value="Copyright &#169; 2002-2013 Timothy Wall. All Rights Reserved."/>
+  <property name="company.full" value="Abbot Framework"/>
+  <property name="compatibility" value="1.6"/>
+  <property name="src" value="src"/>
+  <property name="ext.src" value="ext"/>
+  <property name="test.src" value="test"/>
+  <property name="doc" value="doc"/>
+  <property name="stylesheet" location="${doc}/stylesheet.css"/>
+  <property name="reports" value="${doc}/reports"/>
+  <property name="i18n.src" value="${src}/abbot/i18n"/>
+  <property name="i18n.src.editor" value="${src}/abbot/editor/i18n"/>
+  <property name="i18n.src.example" value="${src}/example"/>
+
+  <!-- Miscellaneous -->
+  <!--
+  <property name="build.compiler" value="jikes"/>
+  <property name="build.compiler.pedantic" value="true"/>
+  -->
+  <property name="build.compiler.emacs" value="true"/>
+  <property name="dist" location="abbot-${abbot.version}"/>
+  <property name="build.debug" value="on"/>
+  <property name="test.vmargs" value=""/>
+  <!-- "no" fails with OOM 060614 -->
+  <property name="test.fork" value="yes"/>
+  <property name="abbot.robot.mode" value="robot"/><!-- or "awt" -->
+  <property name="abbot.skip_ui_tests" value="false"/><!-- or "awt" -->
+
+  <target name="props"
+          description="Initialize dynamic properties and target directories">
+    <tstamp/>
+
+    <echo>Java version: ${java.version}, compatibiility ${compatibility}</echo>
+    <property name="build" value="build"/>
+    <property name="classes" value="${build}/classes"/>
+    <property name="classes.test" value="${build}/test-classes"/>
+    <property name="classes.test.dynamic" value="${build}/dynamic-test-classes"/>
+    <property name="i18n" value="${classes}/abbot/i18n"/>
+    <property name="i18n.editor" value="${classes}/abbot/editor/i18n"/>
+    <property name="i18n.example" value="${classes}/example"/>
+
+    <fileset id="jars.thirdparty" dir=".">
+      <patternset id="jars.ps">
+        <include name="lib/junit-4.8.2.jar"/>   
+        <include name="lib/jdom-1.1.1.jar"/>   
+        <include name="lib/gnu-regexp-1.1.4.jar"/>  
+        <include name="lib/groovy-all-1.8.1.jar"/>
+        <!-- Optional jars -->
+        <include name="lib/jgraph.jar"/>   
+        <include name="lib/ant4eclipse/ant4eclipse.jar"/>
+      </patternset>
+    </fileset>
+    
+    <path id="test.classpath">
+      <path id="build.classpath">
+        <pathelement path="${src}"/>
+        <pathelement path="${ext.src}"/>
+        <path><fileset refid="jars.thirdparty"/></path>
+        <pathelement path="${classes}"/>
+      </path>                           
+      <pathelement path="${test.src}"/>
+      <pathelement path="${classes.test}"/>
+      <pathelement path="${ant.home}/lib/clover.jar"/>
+    </path>                           
+    <!-- Exclude JDK1.4-dependent classes if appropriate -->
+    <condition property="lib.exclude" value="**/JSpinner*">
+      <not><available classname="javax.swing.JSpinner"/></not>
+    </condition>
+    <!-- Omit all 3rd-party extensions if any of the libs are missing -->
+    <condition property="ext.exclude"
+               value="**/extensions/JGraph*">
+      <or>
+        <not><available file="./lib/jgraph.jar"/></not>
+      </or>
+    </condition>
+    <condition property="ext.exclude_a4e" value="**/ImportButton*">
+      <or>
+        <!-- Quick check for 1.4+ -->
+        <not><available classname="javax.swing.JSpinner"/></not>
+        <not><available file="./lib/ant4eclipse/ant4eclipse.jar"/></not>
+      </or>
+    </condition>
+    <property name="lib.exclude" value="ignore"/>
+    <property name="ext.exclude" value="ignore"/>
+    <property name="src.exclude"
+              value="${lib.exclude},${ext.exclude},${ext.exclude_a4e}"/>
+    <echo>Excluding ${src.exclude}</echo>
+  </target>
+
+  <target name="setup" depends="props">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${classes}"/>
+    <mkdir dir="${classes.test}"/>
+    <mkdir dir="${doc}/api"/>
+  </target>
+
+  <target name="default" depends="all"/>
+
+  <target name="all" depends="jar, zip-src"
+          description="Build main jar file and unit tests"/>
+
+  <target name="compile" depends="setup">
+    <javac classpathref="build.classpath"
+           source="${compatibility}"
+           target="${compatibility}"
+           srcdir="${src}:${ext.src}" destdir="${classes}" 
+           excludes="${src.exclude}"
+           deprecation="on" debug="${build.debug}" depend="on">
+    </javac>
+  </target>
+
+  <!-- Extract action docs from javadoc and append them to the default
+       properties file.  Figure out how to handle translations later :(
+  -->
+  <target name=":extract-doc" depends="props">
+    <condition property="-extract-doc">
+      <or>
+        <uptodate targetfile="${build}/extract-stamp">
+          <srcfiles dir=".">
+            <patternset id="tester-docs">
+              <include name="${doc}/api/**/*Tester.html"/>
+            </patternset>
+            <include name="${i18n.editor}/StringsBundle.properties"/>
+          </srcfiles>
+        </uptodate>
+        <not><available file="${doc}/api/index.html"/></not>
+      </or>
+    </condition>
+  </target>
+  <target name="extract-doc" depends="i18n,javadoc,:extract-doc"
+          unless="-extract-doc"
+          description="Generate editor in-line documentation from javadoc.  Requires a suitable shell (cygwin/bash on w32)">
+    <!-- don't fail if a suitable shell is not available -->
+    <apply executable="sh" parallel="true" failonerror="false">
+      <arg value="extract-doc.sh"/>
+      <arg value="${i18n.editor}/StringsBundle.properties"/>
+      <fileset dir=".">
+        <patternset refid="tester-docs"/>
+      </fileset>
+    </apply>
+    <touch file="${build}/extract-stamp"/>
+  </target>
+
+  <!--
+  Copy i18n files (ASCII format) into the build area
+  --> 
+  <target name="i18n" depends="setup">
+    <mkdir dir="${i18n}"/>
+    <mkdir dir="${i18n.editor}"/>
+    <mkdir dir="${i18n.example}"/>
+    <copy toDir="${i18n.example}">
+      <fileset dir="${i18n.src.example}" includes="*.properties"/>
+    </copy>
+    <copy toDir="${i18n}">
+      <fileset dir="${i18n.src}" includes="*.properties"/>
+    </copy>
+    <copy toDir="${i18n.editor}">
+      <fileset dir="${i18n.src.editor}" includes="*.properties"/>
+    </copy>
+  </target>
+
+  <target name="resources" depends="compile">
+    <copy todir="${classes}">
+      <fileset dir="${src}">
+      </fileset>
+    </copy>
+    <copy file="${src}/abbot/abbot.xsd" todir="${classes}/abbot"/>
+  </target>
+
+  <!-- Extracted pattners others would fail in lastest Ant -->
+  <patternset id="resources">
+    <include name="**/*.gif"/>
+    <include name="**/*.map"/>
+    <include name="**/*.bsh"/>
+    <include name="**/*.groovy"/>
+  </patternset>
+  
+  <patternset id="core-contents">
+    <patternset refid="resources"/>
+    <include name="sun/**"/>
+    <include name="abbot/*"/>
+    <exclude name="abbot/abbot.xsd"/>
+    <include name="abbot/finder/**"/>
+    <include name="abbot/i18n/**"/>
+    <include name="abbot/util/**"/>
+    <include name="abbot/tester/**"/>
+    <exclude name="abbot/tester/MapGenerator*"/>
+    <include name="junit/extensions/abbot/**"/>
+    <exclude name="junit/extensions/abbot/Resolver*"/>
+    <exclude name="junit/extensions/abbot/Script*"/>
+    <exclude name="abbot/tester/extensions/**"/>
+  </patternset>
+  <patternset id="scripting-contents">
+    <include name="abbot/abbot.xsd"/>
+    <include name="abbot/tester/MapGenerator*"/>
+    <include name="abbot/script/**"/>
+    <include name="abbot/editor/**"/>
+    <include name="junit/extensions/abbot/Resolver*"/>
+    <include name="junit/extensions/abbot/Script*"/>
+  </patternset>
+  <patternset id="example-contents">
+    <include name="example/**"/>
+    <include name="abbot/tester/extensions/**"/>
+  </patternset>
+
+
+  <target name=":jar" depends="props">
+    <uptodate property="-jar" targetfile="${build}/abbot.jar">
+      <srcfiles dir="${classes}">
+      </srcfiles>
+    </uptodate>
+  </target>
+  <target name="jar"
+          depends="compile-tests,resources,i18n,:jar"
+          description="Build abbot.jar, the primary jar file for the framework"
+          unless="-jar">
+    <jar jarfile="${build}/abbot.jar" filesonly="true">
+      <manifest>
+        <attribute name="Class-Path" value="junit-4.8.2.jar"/>
+        <attribute name="Implementation-Vendor" value="${company.full}"/>
+        <attribute name="Implementation-Version" value="${abbot.version}"/>
+        <attribute name="Specification-Vendor" value="${company.full}"/>
+        <attribute name="Specification-Version" value="${abbot.version}"/>
+      </manifest>
+      <fileset dir="${classes}"><patternset refid="core-contents"/></fileset>
+    </jar>
+    <jar jarfile="${build}/costello.jar" filesonly="true">
+      <manifest>
+        <attribute name="Main-Class" value="abbot.editor.Costello"/>
+        <attribute name="Class-Path" value="abbot.jar gnu-regexp-1.1.4.jar jdom-1.1.1.jar groovy-all-1.8.1.jar"/>
+        <attribute name="Implementation-Vendor" value="${company.full}"/>
+        <attribute name="Implementation-Version" value="${abbot.version}"/>
+        <attribute name="Specification-Vendor" value="${company.full}"/>
+        <attribute name="Specification-Version" value="${abbot.version}"/>
+      </manifest>
+      <fileset dir="${classes}"><patternset refid="scripting-contents"/></fileset>
+    </jar>
+    <copy file="logo32.gif" toFile="${build}/example"/>
+    <jar jarfile="${build}/example.jar" filesonly="true">
+      <manifest>
+        <attribute name="Class-Path" value="costello.jar"/>
+        <attribute name="Implementation-Vendor" value="${company.full}"/>
+        <attribute name="Implementation-Version" value="${abbot.version}"/>
+        <attribute name="Specification-Vendor" value="${company.full}"/>
+        <attribute name="Specification-Version" value="${abbot.version}"/>
+      </manifest>
+      <fileset dir="${classes}"><patternset refid="example-contents"/></fileset>
+    </jar>
+    <copy todir="${build}">
+      <fileset dir="lib" includes="*.zip,*.jar"/>
+    </copy>
+  </target>
+
+  <!-- Build just the src zips for use by IDE tools -->
+
+  <target name="zip-src"
+          depends="resources,i18n"
+          description="Build abbot.jar, the primary jar file for the framework"
+          unless="-jar">
+    <jar jarfile="${build}/abbot-src.zip" filesonly="true">
+      <fileset dir="${src}"><patternset refid="core-contents"/></fileset>
+    </jar>
+    <jar jarfile="${build}/costello-src.zip" filesonly="true">
+      <fileset dir="${src}"><patternset refid="scripting-contents"/></fileset>
+    </jar>
+    <copy file="logo32.gif" toFile="${build}/example"/>
+    <jar jarfile="${build}/example-src.zip" filesonly="true">
+      <fileset dir="${ext.src}"><patternset refid="example-contents"/></fileset>
+    </jar>
+  </target>
+  
+  <target name="compile-tests" depends="compile">
+    <javac classpathref="test.classpath"
+           source="${compatibility}"
+           target="${compatibility}"
+           srcdir="${test.src}" destdir="${classes.test}" 
+           excludes="${src.exclude}"
+           deprecation="on" debug="${build.debug}" depend="on"/>
+    <!-- Move all classes intended for dynamic load somewhere else. -->
+    <mkdir dir="${classes.test.dynamic}"/>
+    <move todir="${classes.test.dynamic}">
+       <fileset dir="${classes.test}">
+         <include name="test/dynamic/*.class"/>
+       </fileset>
+    </move>
+  </target>
+
+  <!-- Due to oddness in the ant class loader and its runner, the tests must
+       be run forked.  This means they need to be bundled into a single
+       invocation, or the tests will take forever to run. -->
+  <target name="test" depends="compile-tests"
+          description="Run the full abbot test suite using the ant runner">
+    <property name="test.haltonfailure" value="false"/>
+    <property name="test.haltonerror" value="false"/>
+    <property name="platform" value="${os.name}-${java.version}"/>
+    <property name="reports.junit" value="${reports}/junit/${platform}"/>
+    <property name="results.junit" location="${build}/junit/${platform}"/>
+    
+    <delete dir="${results.junit}" quiet="true"/>
+    <mkdir dir="${results.junit}"/>
+    <echo>Saving individual results in ${results.junit}</echo>
+    <!-- forkmode="once" doesn't seem to help -->
+    <junit printsummary="on" fork="${test.fork}" 
+           tempdir="${results.junit}"
+           haltonfailure="${test.haltonfailure}"
+           haltonerror="${test.haltonerror}">
+      <sysproperty key="abbot.robot.mode" value="${abbot.robot.mode}"/>
+      <sysproperty key="abbot.skip_ui_tests" value="${abbot.skip_ui_tests}"/>
+      <classpath refid="test.classpath"/>
+      <formatter type="xml"/>
+      <batchtest todir="${results.junit}">
+        <!-- Enforce some ordering of tests.
+             Fixtures, utilities
+             Robot support
+             Tester tests
+             Recorder, script, editor tests (depend on testers)
+        -->
+        <fileset dir="${test.src}"
+                 includes="abbot/*Env.java"
+                 excludes="${ext.exclude}"/>
+        <fileset dir="${test.src}"
+                 includes="abbot/*Test.java,abbot/i18n/*Test.java"
+                 excludes="${ext.exclude}"/>
+        <fileset dir="${test.src}"
+                 includes="abbot/util/*Test.java,junit/**/*Test.java,abbot/finder/**/*Test.java"
+                 excludes="${ext.exclude}"/>
+        <fileset dir="${test.src}"
+                 includes="abbot/tester/*Test.java"
+                 excludes="${ext.exclude}"/>
+        <fileset dir="${test.src}"
+                 includes="abbot/script/**/*Test.java,abbot/editor/**/*Test.java"
+                 excludes="${ext.exclude}"/>
+      </batchtest>
+    </junit>
+    <mkdir dir="${results.junit}"/>
+    <junitreport todir="${results.junit}">
+      <fileset dir="${results.junit}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report todir="${reports.junit}"/>
+    </junitreport>
+    <echo>Reports generated in ${reports.junit}</echo>
+  </target>
+
+  <!-- 040728 w32xp 11m execution time vs 14m for "test" target -->
+  <target name="unit-test" depends="compile-tests"
+          description="Run a single test case indicated by ${unit.test}">
+    <property name="unit.test" value="abbot.UnitTestSuite"/>
+    <junit printsummary="on" fork="${test.fork}" showoutput="yes">
+      <sysproperty key="abbot.robot.mode" value="${abbot.robot.mode}"/>
+      <sysproperty key="abbot.skip_ui_tests" value="${abbot.skip_ui_tests}"/>
+      <classpath refid="test.classpath"/>
+      <formatter type="brief" usefile="false"/>
+      <test name="${unit.test}"/>
+    </junit>
+  </target>
+
+  <!-- Run the particular test many times -->
+  <target name="soak-test" depends="compile-tests"
+          description="Soak some commonly malfucntioning tests">
+    <property name="soak.repeat" value="400"/>
+
+    <java fork="${test.fork}" classname="abbot.tester.ButtonTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.RawButtonTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.ComponentTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.RobotTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.WindowTrackerTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+
+  </target>
+
+  <!-- Run so particular swing tests multiple times -->
+  <target name="soak-test-swing" depends="compile-tests"
+          description="Soak some commonly malfucntioning tests">
+    <property name="soak.repeat" value="200"/>
+
+    <java fork="${test.fork}" classname="abbot.tester.JComboBoxTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JComponentTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JFileChooserTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JInternalFrameTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JListTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JScrollBarTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JSliderTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JSpinnerTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+
+    <java fork="${test.fork}" classname="abbot.tester.JSplitPaneTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JTableTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+
+    <java fork="${test.fork}" classname="abbot.tester.JTextComponentTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JTextFieldTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+    <java fork="${test.fork}" classname="abbot.tester.JToolBarTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+    
+    <java fork="${test.fork}" classname="abbot.tester.JTreeTesterTest">
+      <arg value="${soak.repeat}" />
+      <classpath refid="test.classpath"/>
+    </java>
+
+
+
+  </target>
+
+  <target name="functional-tests" depends="compile-tests">
+    <junit printsummary="on" fork="${test.fork}" showoutput="yes">
+      <sysproperty key="abbot.robot.mode" value="${abbot.robot.mode}"/>
+      <sysproperty key="abbot.skip_ui_tests" value="${abbot.skip_ui_tests}"/>
+      <classpath refid="test.classpath"/>
+      <!-- add tests/suites here to be run -->
+      <test name="abbot.editor.ScriptEditorFunctionalSuite"/>
+    </junit>
+  </target>
+
+  <target name="with.clover">
+    <taskdef resource="clovertasks"/>
+    <property name="build" value="build.clover"/>
+    <property name="clover.include" value="**/*.java"/>
+    <clover-setup initString="${build}/coverage.db">
+      <fileset dir="${src}" includes="${clover.include}"/>
+    </clover-setup>
+  </target>
+
+  <target name="clover" depends="with.clover,test"
+          description="Generate test code coverage reports">
+    <property name="reports.clover" value="${reports}/clover"/>
+    <mkdir dir="${reports.clover}"/>
+    <clover-report>
+      <current outfile="${reports.clover}" title="clover">
+        <format type="html"/>
+      </current>
+    </clover-report>
+    <echo>Reports generated in ${reports.clover}</echo>
+  </target>
+
+  <target name=":doc" depends="props">
+    <uptodate property="-doc" targetfile="${doc}/api/index.html">
+      <srcfiles dir="${src}">
+        <include name="**/*.java"/>
+        <include name="**/*.html"/>
+        <include name="**/*.shtml"/>
+      </srcfiles>
+      <srcfiles dir="${ext.src}">
+        <include name="**/*.java"/>
+        <include name="**/*.html"/>
+        <include name="**/*.shtml"/>
+      </srcfiles>
+    </uptodate>
+  </target>
+  <!-- The javadoc should only have to be remade with the jar file -->
+  <target name="javadoc" depends="setup,:doc"
+          description="Generate JavaDoc APIs" unless="-doc">
+    <mkdir dir="${src}/abbot/script/doc-files"/>
+    <copy file="${src}/abbot/abbot.xsd" todir="${src}/abbot/script/doc-files"/>
+    <javadoc package="true"
+             windowtitle="Abbot Documentation"
+             sourcepath="${src}:${ext.src}"
+             stylesheetfile="${stylesheet}"
+             destdir="${doc}/api"
+             packagenames="junit.extensions.abbot,abbot,abbot.i18n,abbot.finder,abbot.finder.matchers,abbot.util,abbot.script,abbot.script.parsers,abbot.tester,abbot.editor,abbot.editor.actions,abbot.editor.editors,abbot.editor.i18n,abbot.editor.widgets,abbot.editor.recorder,abbot.converter,example,abbot.tester.extensions,test"
+             overview="${src}/abbot/overview.html">
+      <bottom><![CDATA[<center><i>${copyright}<br><a href=http://abbot.sf.net>Abbot</a> is hosted on</i><br><a href=http://sourceforge.net><img src=http://sourceforge.net/sflogo.php?group_id=50939&type=5 width=88 height=31 border=0 alt=SourceForge Logo></a></center>]]></bottom>
+      <classpath>
+        <path refid="build.classpath"/>
+      </classpath>
+      <group title="Abbot GUI Automation" packages="abbot:abbot.*"/>
+      <group title="Abbot JUnit Extension" packages="junit.extensions.abbot"/>
+      <group title="Scripting Support" packages="abbot.script:abbot.script.*"/>
+      <group title="Costello Script Editor" packages="abbot.editor:abbot.editor.*"/>
+      <group title="Example Code" packages="example:abbot.tester.extensions"/>
+      <link href="http://download.oracle.com/javase/6/docs/api/"/>
+      <link href="http://www.junit.org/junit/javadoc/4.8.2"/>
+      <link href="http://www.jdom.org/docs/apidocs"/>
+      <link href="http://groovy.codehaus.org/api"/>
+      <link href="http://www.jgraph.com/doc/jgraph"/>
+    </javadoc>
+    <!-- work around a javadoc bug that fails to copy doc-files 
+         directories not explicitly referenced in Java source
+    -->
+    <mkdir dir="${doc}/api/abbot/doc-files"/>
+    <copy todir="${doc}/api/abbot/doc-files">
+      <fileset dir="${src}/abbot/doc-files" includes="*"/>
+    </copy>
+  </target>
+
+  <target name=":version" depends="props">
+    <available property="-version" file="${abbot.version}"/>
+  </target>
+  <target name="version" depends=":version" unless="-version">
+    <echo>Generating ${abbot.version}</echo>
+    <tstamp>
+      <format property="date" pattern="yyMMdd"/>
+    </tstamp>
+    <replaceregexp
+      match="version [0-9][0-9A-Za-z.]* \(.*\)"
+      replace="version ${abbot.version} (${date})">
+      <fileset id="versioned-files" dir=".">
+        <include name="README.shtml"/>
+        <include name="${doc}/*.shtml"/>
+        <include name="${src}/abbot/overview.html"/>
+        <include name="${src}/abbot/Version.java"/>
+      </fileset>
+    </replaceregexp>
+    <replaceregexp match="-[0-9][0-9A-Za-z.]*.tgz" replace="-${abbot.version}.tgz">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="-[0-9][0-9A-Za-z.]*.zip" replace="-${abbot.version}.zip">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="Release [0-9x][0-9A-Za-z.]* \(x*\)" 
+      replace="Release ${abbot.version} (${date})">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="Release ${abbot.version} \(.*\)"
+      replace="Release ${abbot.version} (${date})">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="v[0-9][0-9A-Za-z.]*" replace="v${abbot.version}">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="version [0-9][0-9A-Za-z.]*"
+      replace="version ${abbot.version}">
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <replaceregexp match="VERSION = .*" replace='VERSION = "${abbot.version}";'>
+      <fileset refid="versioned-files"/>
+    </replaceregexp>
+    <touch file="${abbot.version}"/>
+  </target>
+
+  <target name=":sign" depends="props">
+    <condition property="-sign">
+      <or>
+        <and>
+          <uptodate targetfile="${build}/sign-stamp"
+                    srcfile="${build}/costello.jar"/>
+          <uptodate targetfile="${build}/sign-stamp"
+                    srcfile="${build}/abbot.jar"/>
+          <uptodate targetfile="${build}/sign-stamp"
+                    srcfile="${build}/example.jar"/>
+        </and>
+        <not><available file="certs/signing-keystore"/></not>
+      </or>
+    </condition>
+  </target>
+  <target name="sign" depends="jar,:sign" unless="-sign">
+    <signjar alias="abbot" 
+             keystore="certs/signing-keystore" storepass="costello">
+      <fileset dir="${build}" includes="abbot.jar,costello.jar,example.jar"/>
+      <fileset refid="jars.thirdparty"/>
+    </signjar>             
+    <touch file="${build}/sign-stamp"/>
+  </target>
+
+  <target name=":src.jar" depends="props">
+    <uptodate property="-src.jar" targetfile="src.jar">
+      <srcfiles dir=".">
+        <patternset id="src-archive">
+          <patternset id="misc-files">
+            <include name="README.shtml"/>
+            <include name="abbot.bat"/>
+            <include name="abbot.jnlp"/>
+            <include name="logo32.gif"/>
+            <include name="extract-doc.sh"/>
+          </patternset>
+          <patternset id="doc-files">
+            <include name="${src}/example/**/*"/>
+            <include name="${src}/abbot/tester/extensions/**/*"/>
+            <include name="${ext.src}/example/**/*"/>
+            <include name="${ext.src}/abbot/tester/extensions/**/*"/>
+            <include name="${doc}/*"/>
+            <include name="${doc}/images/*"/>
+          </patternset>
+          <patternset id="src-files">
+            <include name="Makefile"/>
+            <include name="build.xml"/>
+            <include name="abbot.mf"/>
+            <include name="example.mf"/>
+            <include name="properties.txt"/>
+            <include name="**/i18n/*.properties"/>
+            <include name="**/abbot.xsd"/>
+            <include name="${src}/**/*.java"/>
+            <include name="${src}/**/*.*ml"/>
+            <include name="${src}/**/*.gif"/>
+            <include name="${ext.src}/**/*.java"/>
+            <include name="${ext.src}/**/*.*ml"/>
+            <include name="${ext.src}/**/*.gif"/>
+            <include name="${test.src}/**/*.java"/>
+            <include name="${test.src}/**/*.*ml"/>
+            <include name="${test.src}/**/*.gif"/>
+            <include name="${test.src}/**/*.jpg"/>
+            <exclude name="${src}/example/**/*"/>
+            <exclude name="${src}/abbot/tester/extensions/**/*"/>
+            <exclude name="${ext.src}/example/**/*"/>
+            <exclude name="${ext.src}/abbot/tester/extensions/**/*"/>
+          </patternset>
+        </patternset>
+      </srcfiles>
+    </uptodate>
+  </target>
+  <target name="src.jar" depends=":src.jar" unless="-src.jar">
+    <jar jarfile="src.jar">
+      <fileset dir="."><patternset refid="src-archive"/></fileset>
+      <fileset dir="."><include name="${ext.src}/**/*.java"/></fileset>
+    </jar>
+    <copy file="src.jar" toFile="abbot-${abbot.version}-src.jar"/>
+  </target>
+
+  <target name=":tgz" depends="props">
+    <uptodate property="-tgz" targetfile="abbot-${abbot.version}.tgz">
+      <srcfiles dir=".">
+        <patternset id="archive-files">
+          <patternset refid="misc-files"/>
+          <patternset refid="doc-files"/>
+          <patternset id="javadoc" includes="${doc}/api/**/*"/>
+          <patternset refid="jars.ps"/>
+          <patternset includes="lib/abbot.jar,lib/costello.jar,lib/example.jar"/>
+          <include name="src.jar"/>
+        </patternset>
+      </srcfiles>
+    </uptodate>
+  </target>
+  <target name="tgz" depends="javadoc,jar,sign,src.jar,:tgz"
+          unless="-tgz">
+    <copy todir="lib">
+      <fileset dir="${build}" includes="abbot.jar,costello.jarexample.jar"/>
+    </copy>
+    <tar destfile="abbot-${abbot.version}.tgz"
+         compression="gzip">
+      <tarfileset dir="." prefix="abbot-${abbot.version}">
+        <patternset refid="archive-files"/>
+      </tarfileset>
+    </tar>
+  </target>
+  <target name=":zip" depends="props">
+    <uptodate property="-zip" targetfile="abbot-${abbot.version}.zip">
+      <srcfiles dir="."><patternset refid="archive-files"/></srcfiles>
+    </uptodate>
+  </target>
+  <target name="zip" depends="javadoc,jar,sign,src.jar,:zip" unless="-zip">
+    <copy todir="lib">
+      <fileset dir="${build}" includes="abbot.jar,costello.jar,example.jar"/>
+    </copy>
+    <zip destfile="abbot-${abbot.version}.zip">
+      <zipfileset dir="." prefix="abbot-${abbot.version}">
+        <patternset refid="archive-files"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+  <!-- abbot.tgz is what gets unpacked at the sourceforge website -->
+  <target name=":dist" depends="props">
+    <uptodate property="-dist" srcfile="abbot-${abbot.version}.tgz"
+              targetfile="abbot.tgz"/>
+  </target>
+  <target name="dist"
+          depends="clean,version,extract-doc,tgz,zip,eclipse.plugin,:dist"
+          unless="-dist"
+          description="Build all targets for distribution">
+    <tar destfile="abbot.tgz" compression="gzip">
+      <tarfileset dir=".">
+        <patternset refid="archive-files"/>
+      </tarfileset>
+    </tar>
+  </target>
+
+  <target name="clean" description="Remove all transient files." depends="props">
+    <delete dir="${build}" quiet="true"/>
+    <delete quiet="true">
+      <fileset dir="${doc}/api"/>
+      <fileset dir=".">
+        <include name="abbot*.tgz"/>
+        <include name="abbot*.zip"/>
+        <include name="src*.jar"/>
+        <include name="${abbot.version}"/>
+        <include name="*~"/>
+        <include name="**/*~"/>
+        <include name="hs_err_*.log"/>
+        <include name="diff.txt"/>
+        <include name="update.txt"/>
+        <include name="junit*.properties"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="eclipse.plugin" depends="jar" description="Build an Eclipse plug-in.">
+        
+    <!-- Where we'll collect the files. -->
+    <property name="build.plugin" value="${build}/plugin"/>
+    
+    <!-- Get the plug-in manifest. -->
+    <copy todir="${build.plugin}">
+      <fileset dir="eclipse/plugin">
+        <include name="plugin.xml"/>
+        <include name="plugin.properties"/>
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${abbot.version}"/>
+      </filterset>
+    </copy>
+    
+    <!-- Get the runtime JARs and source zip. -->
+    <copy todir="${build.plugin}" file="build/abbot.jar"/>
+    <copy todir="${build.plugin}" file="build/costello.jar"/>
+    <copy todir="${build.plugin}/lib">
+      <fileset dir="lib">
+        <include name="gnu-regexp-1.1.4.jar"/>
+        <include name="jdom-1.1.1.jar"/>
+        <include name="groovy-all-1.8.1.jar"/>
+      </fileset>
+    </copy>
+    <zip destfile="${build.plugin}/abbotsrc.zip">
+      <fileset dir="${src}">
+        <patternset refid="core-contents"/>
+      </fileset>
+      <fileset dir="${src}">
+        <patternset refid="scripting-contents"/>
+      </fileset>
+      <!--<fileset dir="${ext.src}">
+          <patternset refid="core-contents"/>
+        </fileset>-->
+    </zip>
+    
+    <!-- Get the example JAR and source zip. -->
+    <mkdir dir="${build.plugin}/example"/>
+    <copy todir="${build.plugin}/example" file="build/example.jar"/>
+    <zip destfile="${build.plugin}/example/examplesrc.zip">
+      <fileset dir="src">
+        <patternset refid="example-contents"/>
+      </fileset>
+    </zip>
+        
+    <!-- Create the plug-in zip. -->
+    <zip destfile="abbot-${abbot.version}-eclipse.zip">
+      <zipfileset dir="${build.plugin}" prefix="plugins/abbot_${abbot.version}"/>
+    </zip>
+
+  </target>
+        
+  <target name="eclipse.setup" depends="props" description="Set up to use Eclipse PDE for abbot development.">
+        
+        <!-- Copy plug-in manifest and friends, inserting the version. -->
+    <copy todir=".">
+      <fileset dir="eclipse/plugin"/>
+      <filterset>
+        <filter token="VERSION" value="${abbot.version}"/>
+      </filterset>
+    </copy>
+
+        <!-- Save current (Java) project files. -->
+        <mapper id="bak.mapper" type="glob" from="*" to="*.bak"/>
+        <move todir=".">
+          <mapper refid="bak.mapper"/>
+          <fileset dir=".">
+                <include name=".classpath"/>
+                <include name=".project"/>
+        <present present="srconly" targetdir=".">
+          <mapper refid="bak.mapper"/>
+                </present>
+          </fileset>
+        </move>
+        
+        <!-- Copy project files. -->
+        <copy todir="." overwrite="true">
+      <fileset dir="eclipse/project">
+        <include name=".classpath"/>
+        <include name=".cvsignore"/>
+        <include name=".project"/>
+      </fileset>
+        </copy>
+  </target>
+        
+  <target name="eclipse.teardown" description="Undo what eclipse.setup does.">
+        
+    <!-- Restore saved (Java) project files. -->
+    <move todir="." overwrite="true">
+      <fileset dir=".">
+        <include name=".classpath.bak"/>
+        <include name=".cvsignore.bak"/>
+        <include name=".project.bak"/>
+      </fileset>
+      <mapper type="glob" from="*.bak" to="*"/>
+    </move>
+    
+    <!-- Delete plug-in manifest and friends. -->
+    <delete>
+      <fileset dir=".">
+        <include name="plugin.xml"/>
+        <include name="plugin.properties"/>
+        <include name="build.properties"/>
+      </fileset>
+    </delete>
+  </target>
+        
+</project>

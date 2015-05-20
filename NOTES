@@ -1,0 +1,410 @@
+--------------------------------------------------------------
+Stories/planning for new features/bug fixes.  As these get solidified, move to
+TODO as implementation details, or to the end of this file as things not to do.
+
+* when recording: no fuzzy matches.
+  always match exactly or match "matched" component (single run)
+  always match exactly or create new ref (mult. run)
+  - do fuzzy match to ensure no duplicates
+
+  use fuzzy only when *running* a script.
+
+* Drag/drop tracking is sub-par and only sort of works on w32.  Need to
+  characterize event streams for native drags.
+  setDragEnabled(JTree, JTable, JTextComponent, JList et al?)
+  Component.setDropTarget(?)
+
+* wait for idle: could install an AWT event listener and wait for specific
+  events.  OSX key release not received by the time actionKeyStroke returns.
+
+* fuzzy lookup: needs to happen both when editing scripts and when running
+  tests, since you won't always edit before running tests, and the SUT may
+  still change.  When editing a script, only the first run through a script
+  should be fuzzy; once all refs have been matched, there is no longer any
+  need for fuzzy matching; what if no fuzzy matching is done at all when
+  editing?  always create new ones if you don't get an exact match? at worst
+  you end up with redundant refs.
+
+  However, there are at least two kinds of lookup: once (for an action) or
+  periodic (while waiting for the comp to show).
+
+  Currently a lookup does matching against anything, which is ok if there's an
+  exact match, 'cuz that'll take precedence, but on repeated checks
+  (i.e. waiting for a component) you don't want to accept the lesser match.
+
+  Can't *require* a component to show; but can we use "!showing" to invalidate
+  a cache ref?  does this flipflop the logic or just push the envelope out
+  further?   how about this: use showing to invalidate cache ref, but use it
+  in disambiguate as a "preferred ref" (disambiguate already prefers showing
+  components). 
+
+  cleanup: when running a script in the editor, fuzzy matches should get
+  cleaned up so that their attributes are exact.  when creating new
+  references, matches should *always* be exact unless the component is somehow
+  removed from the hierarchy while creating the ref.  should separate cref
+  lookups or flag when a cref is being created versus when it is being used;
+  lookups on creation should be more strict, on use should be more flexible.
+
+  Parent/ancestor reference needs to be more of a pattern match, so that any
+  ancestor might be dropped or have one added without losing the entirety of
+  the saved hierarchy.  With only a parent, we save no extended ancestor
+  information (except for the window).  This could be done with regexp
+  matching; empty jpanels can be represented by .*, while more important
+  ancestors can be included (by ref name?).
+
+  Lookup in different operations:
+  o script editing: app launched, zero or more existing refs
+    - want to use an existing one if possible, otherwise create a new one.
+      to use an existing ref, see if any existing refs match, which can be
+      done in one of two ways:
+      o look up all refs to see if any resolves to the component (current impl)
+      - expect exact matches or no matches
+      o match each ref against the component (getMatchWeight is greater than
+      some minimum, or is exact?)
+      - expect exact match
+    - any refs created in that session, or already matched in that session and
+    cleaned up, should *not* use a fuzzy match.
+    - no fuzzy matching should be used when editing.  script should be run
+      first to fix up matches; don't want to re-use a reference
+      inappropriately (i.e. multiple dialogs with save/open)
+
+    a) partially-run script: some matches may be cached, but results may be
+    cached until the app terminates.
+    b) not-yet-run script: no matches will be cached; results of matches may be
+    cached until app termination (except for re-generated components)
+
+  o script running (testing): never create new references.  match refs to
+    (usually) existing components.  clear cache on exit.
+    - expect refs to match, allow for fuzzy matching
+    - lookup component on wait for !showing
+
+  o script cleanup (manual): load a script, app may have changed (make fuzzy
+    matching optional?); warn about fuzzy matches (auto-correct option)
+    - expect refs to match, allow for fuzzy matching
+  o script cleanup (auto): only when explicitly asked
+    - clean up non-exact matches
+
+  Cache matches (ref->comp and comp->ref):
+  o should be discarded if
+    a) component or ancestor has been filtered (window disposed)
+    b) at start/end of test
+    - can cref/resolver caches be cleared when necessary?
+      a lot of the problem seems to stem from not explicitly clearing the
+      cache. 
+  Issues:
+  o Clones (single components effectively created multiple times, w/o disposal)
+  o Un-parented components (only a problem w/delayed capture)
+  o Components disposed at time of capture (or shortly thereafter)
+
+
+* tag: 
+  "tag": can't tell what it represents; only need deriveTag
+  "xxx": need more interface to sample N of these and give them weights
+         Map deriveTags(Component c)
+  Need at least one for custom components.
+
+* Can Component.getDropTarget() be used somehow to aid in drag/drop recording?
+
+* Where are applets listed in the first place?  Frame.getFrames() returns what?
+  (embedded applet frame, derived from Frame); one per applet.
+  EmbeddedFrame->AppletViewer->Applet
+
+* IE/plugin: forward/back uses same class loader, but destroys old applets,
+  creates new ones
+* IE/plugin: reload page uses new class loader
+* IE/plugin: new instance, new plugin instance; new window (or start *.html)
+  uses existing app instance.  one plugin instance per app instance.
+
+* one thread group per applet codebase (at least two threads in it)
+* one thread group (and thread?) for console (also has separate app context)
+* applets hear each others' events in some environments
+* w32 sends enter/exit events even when out of focus (OSX does not?)
+
+* per-page on IE appears to have no effect; same applets share thread and
+  group. 
+
+
+
+MISC design notes or ideas, eventually put these into the docs
+
+* component references (loose coupling)
+  script vs code
+  use basic building blocks to construct semantic events
+  Should maybe save all available tags (if name/tag unavailable, to avoid
+  overhead of storing all parents in the hierarchy).  Then when looking up,
+  give each matching (or not matching) element a weight.  name/tag has highest
+  weight, parent/index has lowest.  This gives a more fuzzy lookup.
+  allows us to throw out matches with only a nominal match (say classname) but
+  still use that match if there are no others.
+
+  What we really want is not weights (since the component attributes all have
+  very specific, well-defined meanings and usage).  Weights are more
+  applicable to a number of more or less equivalent (in usage), anonymous
+  attributes.  Probably want to make a direct decision, more like,
+  "well, it all matches up, but the parent/index was changed, so if the caller
+  is ok with it, call it a match"
+  "well, nothing matches, but I do find something with the same class, so if
+  the caller is ok with it, call it a match"
+  (originally I anticipated more equivalent, unknown attributes, provided for
+  custom components)
+
+  The problem is that with some component layouts, the only difference between
+  two components *is* the parent or index, so care must be taken when
+  indicating an almost vs an exact match is acceptable.
+
+  Anyhow, there's still some fuzziness in component matching to be worked out.
+
+  Use String getProperty on crefs; all comparisons are ==/!= anyway, no need
+  to convert from string (?).
+
+* suite vs single test (application fixtures)
+  fixture: maybe have a script step which encapsulates some setup/teardown. 
+    it can then include other scripts/sequences.
+  test: describe some feature/unit under test; may actually be an aggregate.
+  if an aggregate.
+  in any aggregate, want to be able to single out pieces of the test (for
+  quick turnaround testing).  is it really necessary?  is this combining unit
+  tests into functional tests?  do we really need to exec one piece of an
+  aggregate, or just know that it fails?  (cf gdb test suites; often need to
+  execute on .exp file from all of them, sometimes need to run one test out of
+  the exp file (have to do this by hand).  executing a single test comes from
+  wanting to debug vs wanting to test).
+
+  In the context of abbot:
+  1) want component tests, no problem to launch a frame for every test
+  2) want functional, app tests.  want single launch, a bunch of different
+  tests, aggregate these.  each sub-test might have several steps.  main
+  script continues after failure, sub-tests don't.  (script + sequences,
+  strictly organizational -- don't really want sub-scripts).  sub-scripts
+  would be like libraries of common functions -- not sure of a real need with
+  gui testing.
+
+DONE
+
+* testcase(fixture) vs script (obsolete)
+- it's much easier, especially in the editor, to work directly with scripts.
+if I want to start from scratch, I don't want to have to write some code and
+compile it.  It also makes us independent of junit.
+
+  script could also implement the Test interface
+
+  Wouldn't be just as easy to script jemmy or jfcunit?  jemmy has all the
+  operators...  component references are a little different, but could
+  probably be integrated.
+
+* BeanShell:
+  maybe start with an <expr> script step, which allows an arbitrary bsh
+  script.  Interpreter is stored in Script.setProperty.
+  Required functions:
+  - look up component: component(String)?
+    what about ComponentFinder.find()?
+  - script/resolver/finder (bsh global)
+  - convert string to object (parsers)? bsh doesn't support this - i don't see
+    any "eval" hooks.  not strictly required, since you can do a "new object"
+    inline 
+
+  Don't worry about integrating with Assert/Action.
+
+* need a component references container model, so refs can be added/removed on
+  that IF and events propagated where they need to in the editor
+
+* cref fixup (obsolete)
+  - create ref, cull dups (two operations)
+  - requirees refs to be fixed up prior to further recording?
+    actually doesn't matter; each ref should match (or if it fails get
+    interactively fixed up), so duplicates don't care.  After a script run,
+    refs with the same cached component can be merged (which requires a merge
+    and ref id replace method).
+  - note used refs in a run, remove unused ones
+  - remove dups after recording finished?  cref IDs are always 1st arg or
+    component attribute (when changing ID).
+
+* should action/assert always store a class tag when first arg is a component?
+  that's probably the best way to identify that a derived tester is required,
+  but then why not use the tester's class name?  because it might not be known
+  when generating the script?  why not derive the tester class from the
+  component reference arg? b/c the cref arg's class is not real yet, so you
+  can't walk up its hierarchy. (revised to be more consistent)
+
+* launch/terminate/class loader:
+
+  Need a separate object to encapsulate thread launching + class loader, given
+  a classpath and a few flags.  would be used by launch/fixture/steprunner.
+
+  StepRunner (used by both ScriptFixture and editor) could then consistently
+  handle context loading/unloading/threading.
+
+  Incentive is that the editor needs the context separately from run in order
+  to edit scripts with or w/o a launched app.
+
+  When a thread has a launch step, it *must* have a terminate
+    (maybe embed launch/terminate into the script itself?)
+
+  Class.forName: loads with getClass().getClassLoader()
+  context class loader: used by code running in the thread to load classes and
+  resources.  does it supercede
+  Thread.currentThread().getClass().getClassLoader()?  not clear, should test.
+
+* use integers for key codes and work around parsing issues in the parser
+  use most sensible args for methods, since they are dual-use
+
+* problem: launch needs to install context on script load (but not on dispatch
+  thread, 'cuz a new dispatch thread is launched and you're already on the
+  dispatch thread and need to return "synchronously".
+
+
+* need "Add reference button" (alt shift F1)
+* why does getClass not show up on comp props?
+(OLD design notes, now mostly obsolete or implemented)
+* Let ComponentReference do the matching! (done)
+
+* component lookup
+  XXXFinder vs ComponentFinder: do scripts need a generic lookup?  I suppose
+  each reference could have a specific lookup type, with only the args
+  required for that type.
+
+* revise how component finder works:
+  1) find an existing component given a reference (filtering, unfilterable?)
+     for purpose of performing an action, therefore must be visible 
+     i.e. for any given component, does it match? (ComponentReference?)
+  2) double check a just-created reference (consider a just-closed dialog)
+     are there any cases where the component wouldn't be visible?
+     (same as 1)
+  3) "augmented" hierarchy walking
+  4) checking a property of a component (any reason why a component wouldn't
+    be visible?) 
+    (just-closed dialogs, deanhiller)
+  5) generation of a basic list of root windows (only filter windows, right?)
+
+  Visibility is a question b/c JOptionPane generates dialogs which we can't
+  detect whether they are disposable (maybe could if we could get a stack
+  trace from the show() method, but that's a bit hacky).  So when a dialog
+  goes away, you don't know for sure whether to filter it or not.  May be
+  sufficient to use visibility as a deciding factor and not try to filter.
+
+// Recorder notes:
+// TODO: mouse motion filter (no, flag for yes or no on EventRecorder
+// TODO: standalone modifier keys, key press/release (no, these get caught by
+// EventRecorder. 
+
+TOO COMPLEX!::
+* pattern-match event sequences; some things really need at least two events
+to tell what's going on.
+Maybe translate events into letter sequences and regexp match them; this would
+make it easier for a parser... drop the events that aren't explicitly matched
+in the pattern, e.g.
+
+BbPpQq = button down/up (1, popup, non-popup)
+GHI = button click
+Kk = key down/up
+T = key typed
+Aa = modifier down/up (need alt, alt/graph, meta, shift, ctrl)
+M = motion
+D = drag
+W = window event (most/all? are single events)
+Ff = focus gained/lost
+
+Use DragGestureListener, DragSourceListener, DragTargetListener instead?
+I don't think that's possible -- note different semantics for different
+platforms. 
+
+click:
+BD*bG (OSX might be different)
+
+* Script provides parameters for existing events + checks
+
+  Extension code can be loaded; need a map from XML types to classes to
+  instantiate with XML node.
+
+  <AWTEvent classname="xxx" opt1="val1" ...></AWTEvent>
+  <Test classname="xxx" methodname="xxx" componentID="cid"></Test>
+
+
+  GUI testing  (cf quickeys)
+  script:
+  move mouse to x, y (global)           x,y
+  move mouse to x, y (component)        x,y,ID
+  click x, y (global)                   x,y,b
+  click x, y (component)                x,y,b,ID
+  click (component) (middle)            ID
+  click (component) (list item)         k,ID
+
+* push button                           ID
+* enter text                            text,ID
+  select menu                           ID (menu path?)
+  select popup                          k
+
+  waitFor (+timeout)
+*   window showing
+    window not showing
+
+  support functions:
+  find list item N (bounds)
+  find component by index, name, class, Nth class, depth, hierarchy of these
+    do best heuristics to tell which are essential.
+  add a number of commonly-called support functions: window count, component
+  count, label, text, etc.  provide for custom tests.
+
+Test interface: testXXX(Component c)  
+e.g.
+
+  testTextFieldContents(ID)
+  custom test, mostly needs a component reference
+
+Script includes events, wait/pause, checks, include other script
+Sample: create frame + button, click button, show new frame with text field,
+verify contents of text field.
+
+  TestDecorator: setup AWT event listener before each test?
+
+AWTest.java extends AWTTestCase {
+    public MyTest(String name) {
+        super(name);
+        //setScriptDirectory("xxx");
+    }
+
+    public String getTestDirectory();
+    // auto
+    // scan for all MyTest*.xml (where to store files?)
+    // need to derive from TestSuite(Class) to do scan
+    // AWTTestSuite(Class[, scriptDir])
+}
+
+// one TestCase, name is method name to invoke
+// Fixture: TestCase with SetUp/TearDown definitions 
+// Decoration: Wrapper for a Test, pre-/post- test operations, per test
+//   how is this different from setUp/tearDown?
+
+DON'T NEED:
+* File lookup provided by script.  Handle all relative path lookups
+  transparently, as if script "owns" the file.
+* add auto plugin (tester, recorder) download; probably need to add plugins to
+  class path or something
+* optionally filter out glass pane, layered pane, root pane, popup window
+  containers,  etc that arent' terribly useful. 
+* toBack on linux puts window *way* back
+  track opened windows to distinguish which to pull forward (instead of
+  pushing editor window back)
+* winNNN/frameNNN auto-generated for popups/frameless windows
+  should maybe filter these
+* how can I keep the editor active when a modal dialog is showing?
+  not possible?
+* cref lookups (not needed with recent performance fixes):
+  recording: match existing refs to avoid duplicates
+    should create refs as needed, then cull duplicates afterwards; not a big
+    deal if we have a lot of duplicates, it only clutters the script.  since
+    all crefs are referenced from a specific step, so additional references
+    won't affect existing ones.  maybe just create them, and do culling later.
+    make initial lookup just a quick cache match.
+
+  running: find component matching a ref, might need fuzzy match
+  editor:
+  a) browser select ref, select corresponding component
+  b) browser select component, select corresponding reference
+
+  2 lookups; one for during a test, where loose matches are allowed only if
+  strong matches fail (happens anyway)
+  one for editing test, where loose matches should *not* be allowed; ambiguous
+  matches should be corrected
+
+

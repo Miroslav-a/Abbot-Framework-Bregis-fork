@@ -1,0 +1,12 @@
+NOTES on tests
+
+Recorder tests:
+Some window managers force a window to be activated when it is shown; this is
+usually the result of a click-to-focus policy.  Other window managers with a
+pointer-focus policy may not activate a window when it is shown.  Be sure to
+account for this when checking for a recorded activate event.
+
+Platform-specific issues:
+If you encounter strange behavior that causes a test to fail, add code *for
+your current platform only* to check for that strange behavior, and comment it
+accordingly.  

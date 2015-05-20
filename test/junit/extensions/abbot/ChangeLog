@@ -1,0 +1,39 @@
+2005-01-05  Timothy Wall  <twall@users.sf.net>
+
+	* ComponentTestFixtureTest.java (testAutoDisposeWindows): Add
+	explicit test.
+
+2004-06-28  Timothy Wall  <twall@users.sf.net>
+
+	* ComponentTestFixtureTest.java (testShowFrame): Fix tests failing
+	on Linux.
+
+2003-07-11  Timothy Wall  <twall@sourceforge.net>
+
+	* AllTests.java: New.  Test suite for package.
+	* ComponentTestFixtureTest.java: New.  Ensure windows are ready
+	when showWindow returns.
+
+2003-04-02  Timothy Wall  <twall@sourceforge.net>
+
+	* ScriptTestSuiteTest.java: Make sure there's at least one file
+	for the fixture to load from.
+
+2003-04-01  Timothy Wall  <twall@sourceforge.net>
+
+	* ScriptTestSuiteTest.java: Clean up temp directory before testng.
+
+2003-01-02  Timothy Wall  <twall@sourceforge.net>
+
+	* ScriptTestSuiteTest.java (testGenerateFilenames): Ensure test is
+	independent of the environment.
+
+2002-12-19  Timothy Wall  <twall@sourceforge.net>
+
+	* ScriptTestSuiteTest.java (testGenerateFilenames): Add test for
+	file scan routine.
+
+2002-11-08  Timothy Wall  <twall@sourceforge.net>
+
+	* ScriptTestSuiteTest.java (ScriptTestSuiteTest): new.
+

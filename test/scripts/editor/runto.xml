@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AWTTestScript desc="Run to selected step">
+  <component id="OK" class="javax.swing.JButton" index="0" title="Test Selector" tag="OK" />
+  <component id="Select Test Suite..." class="javax.swing.JButton" index="5" title="Test Script Editor " tag="Select Test Suite..." />
+  <component id="JList Instance" class="javax.swing.JList" title="Test Selector" />
+  <component id="Run To" class="javax.swing.JMenuItem" index="1" title="Test Script Editor.*" tag="Run To" />
+  <component id="ScriptEditor" class="abbot.editor.ScriptEditorFrame" name="ScriptEditor" title="Test Script Editor.*" />
+  <component id="Run" class="javax.swing.JButton" index="7" title="Test Script Editor .*" tag="Run" />
+  <component id="ScriptTable Instance" class="abbot.editor.ScriptTable" index="0" title="Test Script Editor.*" />
+  <launch classpath="lib/abbot.jar:lib/example.jar:classes" args="[]" delegate="false" class="abbot.editor.Costello" method="main" />
+  <wait args="Test Script Editor.*" method="assertFrameShowing" />
+  <sequence desc="Select MyCode suite">
+    <action args="Select Test Suite..." class="javax.swing.AbstractButton" method="actionClick" />
+    <wait args="Test Selector" method="assertFrameShowing" />
+    <action args="JList Instance,MyCodeTest - example" class="javax.swing.JList" method="actionSelectValue" />
+    <action args="OK" class="javax.swing.AbstractButton" method="actionClick" />
+    <wait args="Test Selector" invert="true" method="assertFrameShowing" />
+  </sequence>
+  <action args="ScriptTable Instance,8,0" class="javax.swing.JTable" method="actionSelectCell" />
+  <action args="Run To" method="actionSelectMenuItem" />
+  <!--Wait for script to start running-->
+  <wait component="Run" invert="true" method="isEnabled" />
+  <!--Wait for script to finish-->
+  <wait component="Run" method="isEnabled" />
+  <!--Runner should have stopped at the selected cell-->
+  <assert component="ScriptTable Instance" value="8" method="getSelectedRow" />
+  <terminate />
+</AWTTestScript>
+

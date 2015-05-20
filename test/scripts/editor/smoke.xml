@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AWTTestScript desc="Smoke test">
+  <component id="JSplitPane Instance" class="javax.swing.JSplitPane" title="ScriptEditor" />
+  <component id="JList Instance" class="javax.swing.JList" title="Test Selector" />
+  <component id="ScriptEditor" class="abbot.editor.ScriptEditor" name="ScriptEditor" title="ScriptEditor" tag="ScriptEditor" />
+  <component id="Run" class="javax.swing.JButton" tag="Run" />
+  <component id="JTable Instance" class="javax.swing.JTable" title="ScriptEditor.*" />
+  <component id="OK" class="javax.swing.JButton" title="Test Selector" tag="OK" />
+  <component id="JTextArea Instance" class="javax.swing.JTextArea" title="Test Script Editor.*" />
+  <component id="Select Test Suite..." class="javax.swing.JButton" tag="Select Test Suite..." />
+  <launch classpath="lib/abbot.jar:lib/example.jar:classes" args="[]" delegate="false" class="abbot.editor.Costello" method="main" />
+  <wait args="Test Script Editor.*" method="assertFrameShowing" />
+  <action args="Select Test Suite..." class="javax.swing.JButton" desc="Click button 'Select Test Suite...'" method="actionClick" />
+  <wait args="Test Selector" timeout="60000" method="assertFrameShowing" />
+  <action args="JList Instance,FontChooserTest.*" class="javax.swing.JList" desc="Select FontChooserTest from ${JList Instance}" method="actionSelectValue" />
+  <action args="OK" class="javax.swing.JButton" desc="Click button 'OK'" method="actionClick" />
+  <wait args="Test Selector" invert="true" method="assertFrameShowing" />
+  <wait component="JTextArea Instance" value="Editing script.*" method="getText" />
+  <action args="Run" class="javax.swing.JButton" desc="Click button 'Run'" method="actionClick" />
+  <wait component="JTextArea Instance" value="Script ran successfully" method="getText" />
+  <terminate />
+</AWTTestScript>
+

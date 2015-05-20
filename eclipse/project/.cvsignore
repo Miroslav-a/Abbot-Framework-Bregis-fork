@@ -1,0 +1,27 @@
+# special case for release area
+[0-9].[0-9]*
+abbot-[0-9]*
+bin
+build
+*.class
+*.jar
+*.tgz
+manifest.mf
+patches
+references
+samples
+certs
+releases
+bugreports
+build.clover
+abbot-applet*.html
+keymap
+*.out
+*.txt
+*.jpl
+# Eclipse plug-in artifacts.  See build.xml/eclipse-{setup,teardown}.
+META-INF
+plugin.*
+build.properties
+.project
+.classpath

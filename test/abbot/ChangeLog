@@ -1,0 +1,704 @@
+2005-05-19  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java (testSelectAWTMenuItem): always wait for
+	idle after UI actions.
+
+2005-02-23  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java (testImageCapture): Ensure test times out
+	or fails.
+
+2004-11-29  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java (testImageCapture): Fail if images are not
+	found (art hampton).
+
+2004-10-28  Timothy Wall  <twall@users.sf.net>
+
+	* tester/ComponentTesterTest.java (testSelectPopupMenuItemByPath):
+	Test selection of popup menu items by path.
+
+2004-07-27  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AbstractRecorderFixture.java: Properly throw
+	recording failures.
+
+2004-07-20  Timothy Wall  <twall@users.sf.net>
+
+	* script/ForkedStepRunnerTest.java: Update to match
+	ProcessOutputHandler signature change.
+
+2004-07-19  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/EventRecorderTest.java (testCaptureNumPad):
+	Strip test down to bare essentials. 
+
+2004-06-28  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java (testEventPostDelay): Add explicit test
+	for event post delay (the delay between the last robot method and
+	a wait for idle to give the system time to process native-level
+	events onto the AWT queue).
+
+2004-06-27  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AbstractRecorderFixture.java: Only run recorder
+	tests if in EM_ROBOT mode.
+
+2004-06-17  Timothy Wall  <twall@users.sf.net>
+
+	* script/ComponentReferenceTest.java: Add another performance test
+	for reference creation.
+
+2004-06-16  Timothy Wall  <twall@users.sf.net>
+
+	* PlatformTest.java: Move JVM/OS bug tests here.
+
+2004-06-15  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/ComponentRecorderTest.java: Use real robot
+	events to test AWT menu selection recording.
+
+2004-03-04  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AbstractRecorderFixture.java: Facilitate GC of
+	various objects after each test run (especially GUI components
+	which might be referenced by a captured event).
+	* editor/recorder/AbstractSemanticRecorderFixture.java: Ditto.
+	* editor/recorder/ComponentRecorderTest.java: Ditto.
+	* editor/recorder/EventRecorderTest.java: Ditto.
+	
+2004-06-04  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AbstractRecorderFixture.java: Fix NPE when
+	running the same test multiple times.
+
+2004-03-16  Timothy Wall  <twall@users.sf.net>
+
+	* UnitTestSuite.java: Allow for filtering based on class name,
+	e.g. java -Dabbot.test.filter=abbot.util UnitTesSuite will test
+	only the abbot.util package.
+
+2004-03-11  Timothy Wall  <twall@users.sf.net>
+
+	* script/ForkedStepRunnerTest.java: Ensure full stack trace is
+	included in forked errors/failures.
+
+2004-01-30  Timothy Wall  <twall@users.sf.net>
+
+	* Ensure all while loops use sleep.
+
+2004-01-09  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotAppletTest.java: New. Generic framework for applet tests.
+
+2004-01-07  Timothy Wall  <twall@users.sf.net>
+
+	* script/ScriptTest.java: Add test for reference addition performance.
+
+2004-01-05  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotAWTModeTest.java: Avoid drag/drop tests.
+
+2003-12-29  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotAWTModeTest.java: Only run robot tests in AWT mode
+	if they haven't been already.
+
+2003-12-27  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java: Avoid extraneous applet viewer output.
+
+2003-10-06  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java: Fix failing drag/drop tests; was checking
+	drag source instead of drop target and vice versa.
+
+2003-09-26  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java: No need to test image capture in AWT mode.
+
+2003-09-04  Timothy Wall  <twall@users.sf.net>
+
+	* editor/ScriptTableTest.java: Add test for 1.4.2_01 bug hiding a
+	sequence. 
+
+2003-09-04  Timothy Wall  <twall@users.sf.net>
+
+	* util/AbstractEventExceptionHandlerTest.java: Add installation test.
+
+2003-08-28  Timothy Wall  <twall@users.sf.net>
+
+	* tester/WindowTrackerTest.java (testTrackWindowReady): Ensure
+	window is hidden before waiting for it to show.
+
+2003-08-14  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AllTests.java: Renamed from RecorderTestSuite.
+	* editor/recorder/AbstractSemanticRecorderTest.java: Keep event
+	lists per recorded steps.
+	* editor/recorder/DialogRecorderTest.java: New.
+	* editor/recorder/FrameRecorderTest.java: New.
+	* editor/recorder/FileDialogRecorderTest.java: New.
+	
+2003-07-11  Timothy Wall  <twall@users.sf.net>
+
+	* editor/ScriptTableTest.java (testClickOpenClose): Cell rect does
+	not include left indentation.
+
+	* tester/ComponentTesterTest.java: Use "showWindow" to display a
+	dialog under test.
+
+	* script/ForkedStepRunnerTest.java: Don't use an invalid script,
+	since we're now validating the XML on load.
+
+	* script/LaunchTest.java (testContextThreaded): New.
+
+2003-07-09  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotAWTModeTest.java: Add tests for edge cases.
+
+2003-07-09  Timothy Wall  <twall@users.sf.net>
+
+	* tester/WindowTrackerTest.java (testTrackWindowState): Ensure we
+	can detect when a window is ready for input.
+	
+2003-07-07  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/WindowRecorderTest.java: Verify proper steps are
+	recorded, not just that the tester worked.
+
+	* tester/WindowTrackerTest.java: New test.
+
+2003-06-27  Timothy Wall  <twall@users.sf.net>
+
+	* tester/RobotTest.java (testClickTertiary): Increase wait timeouts.
+
+2003-05-27  Timothy Wall  <twall@users.sf.net>
+
+	* tester/JListTesterTest.java: Test for action failure.
+
+2003-05-26  Timothy Wall  <twall@users.sf.net>
+
+	* tester/ComponentTesterTest.java: Simplify popup installation.
+
+2003-05-21  Timothy Wall  <twall@users.sf.net>
+
+	* util/AbstractEventExceptionHandlerTest.java: Flush exceptions
+	before returning.
+
+2003-05-20  Timothy Wall  <twall@users.sf.net>
+
+	* util/AWTTest.java: Split into heavy/light popup tests.
+
+2003-05-19  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/JComboBoxRecorderTest.java: Rename some
+	ambiguously named tests.
+	* editor/recorder/AbstractSemanticRecorderTest.java: Clarify
+	javadoc and usage.
+	* util/AWTTest.java (testTransientPopups): Add test for detecting
+	transient popups.
+
+2003-05-18  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/JComboBoxRecorderTest.java: Add tests which
+	include events to be ignored.
+
+2003-05-09  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/AbstractSemanticRecorderTest.java: Use reduced
+	event mask.
+	* editor/recorder/ComponentRecorderTest.java: Fix failing test on
+	linux. 
+	* tester/InputStateTest.java: Ditto.
+	
+2003-05-03  Timothy Wall  <twall@users.sf.net>
+
+	* editor/ScriptModelTest.java (testGetSequenceLine): Add tests
+	for step file/line information.
+
+2003-04-30  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/*RecorderTest.java: Refactor.  Make all of these
+	extend ComponentTestFixture so that we get the proper cleanup
+	after each test.  Get rid of AbbotHelper.
+	* tester/*TesterTest.java: Ditto.
+	
+2003-04-26  Timothy Wall  <twall@users.sf.net>
+
+	* editor/recorder/JInternalFrameRecorderTest.java: Don't invoke
+	"show" inline to avoid deadlocks.
+	* PlatformTest.java: Ditch AbbotHelper.
+	* tester/ComponentTesterTest.java: Ditto.  Fixes a bunch of
+	failing tests due to test setup order.
+	* tester/RobotTest.java: Ditto.
+	* i18n/ResourcesTest.java: Test for flagged keys and null keys.
+	
+2003-04-25  Timothy Wall  <twall@users.sf.net>
+
+	* tester/TesterTestSuite.java (suite): Add AWT mode test.
+	* tester/RobotAWTModeTest.java: (new) Add tests for enter/exit
+	generation. 
+
+2003-04-13  Timothy Wall  <twall@users.sf.net>
+
+	* editor/ScriptModelTest.java: Updated.  
+	* editor/ScriptTableTest.java: New.
+	* tester/ComponentTesterTest.java: Add drag/drop test.
+	* tester/RobotTest.java: Extend ComponentTestFixture, which is a
+	cleaner fixture than AbbotHelper.
+	
+2003-04-03  Timothy Wall  <twall@editor/Chusers.sf.net>
+
+	* tester/ArgumentParserTest.java: Test converter loading.
+
+2003-04-01  Timothy Wall  <twall@users.sf.net>
+
+	* script/AnnotationTest.java (testShow): Clean up timing.
+	* tester/RobotTest.java: -1 no longer represents component center.
+	
+2003-03-27  Timothy Wall  <twall@users.sf.net>
+
+	* DefaultComponentFinderTest.java: Add test for finding
+	non-showing frame descendent. 
+
+2003-03-25  Timothy Wall  <twall@users.sf.net>
+
+	* editor/actions/CommandHistoryTest.java: Test undo/redo stack.
+	* util/PathClassLoaderTest.java: Check resource loading.
+	
+2003-03-16  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/AnnotationTest.java (testShow): New.
+	* script/AllTests.java (suite): Renamed from ScriptTestSuite.
+
+2003-03-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/editors/AllTests.java: Add EventEditorTest.
+	* editor/editors/EventEditorTest.java: New.
+	
+2003-01-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/ScriptModelTest.java (ScriptModelTest): Add test for
+	moving an open sequence.
+
+	* editor/recorder/JTreeRecorderTest.java
+	(testCaptureMultipleClick): Use proper actionClick signature.
+	* editor/recorder/JTableRecorderTest.java
+	(testCaptureMultipleClick): Ditto. 
+	* editor/recorder/ComponentRecorderTest.java
+	(testRecordMultipleClick): Ditto.
+	* tester/ComponentTesterTest.java (testDoubleClick): Ditto.
+
+2003-01-13  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java: Merge
+	DynamicClassLoader/TestClassLoader tests into AppClassLoader tests.
+	* script/AppClassLoaderTest.java: Ditto.
+	* PlatformTest.java: Absence of a bug is not an error, but warn
+	about it. 
+	* editor/recorder/AbstractSemanticRecorderTest.java: Also use new
+	recorder if old one didn't produce a step.
+	* editor/recorder/ComponentRecorderTest.java: Remove extra input.
+	* editor/recorder/EventRecorderTest.java: Add logging.
+	* tester/JListTesterTest.java: Set initial list index.  Explicitly
+	wait for action to finish.
+	* tester/RobotTest.java: Explicitly wait for robot events to finish.
+	* util/PathClassLoaderTest.java: New.
+	
+2003-01-02  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/EventRecorderTest.java (testRecordSingleKey): 
+	Ensure proper focus on pointer-focus WM.
+	* tester/JComponentTesterTest.java (testActionMap): Ditto.
+	
+2002-12-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/ScriptEditorFunctionalSuite.java (suite): Fix incorrect
+	class names.
+
+2002-12-16  Timothy Wall  <twall@users.sourceforge.net>
+
+	* PlatformTest.java (testMultiClickFrameBug): Provide better
+	multi-click bug detection.
+	* editor/recorder/EventRecorderTest.java (testRecordNumPad): Avoid
+	picking up action mappings from a text field.
+
+2002-12-14  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/*TesterTest.java: Check for multi-click frame bug.
+	* script/ForkedStepRunnerTest.java (testForkedException): Change
+	expected exception signature. 
+	* editor/ScriptEditorTest.java: Functional tests moved to...
+	* editor/ScriptEditorFunctionalSuite.java: ...here. New.
+
+2002-12-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/editors/AllTests.java: New.
+	* editor/EditorTestSuite.java: Add step editor tests.
+
+2002-12-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/JComboBoxRecorderTest.java: Expect selectItem
+	instead of selectIndex.
+	* editor/editors/CallEditorTest.java: New.
+	* editor/editors/AssertEditorTest.java: New.
+	* editor/editors/ActionEditorTest.java: New.
+	* tester/JTextComponentTesterTest.java (testSetText): Use
+	actionEnterText instead of actoinText.
+	* editor/editors/CallEditorTest.java (testMethodList): New.
+	Verify combo box operation.
+	* script/StepRunnerTest.java (testThrowMultipleError): Add test
+	for properly thrown exceptions when stop on error/failure is not
+	set.  Change run signature.
+
+2002-12-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/AbstractRecorderTest.java: Clear event list
+	before each step is captured.
+	* editor/recorder/AbstractSemanticRecorderTest.java: Clear events
+	prior to event capture.  Default to not requiring recorder to be
+	finished. 
+	* editor/recorder/ComponentRecorderTest.java: Add test for
+	default multiple clicks.
+	* editor/recorder/JTableRecorderTest.java: Test multiple click.
+	* tester/ComponentTesterTest.java: Update multi-click test.
+	
+2002-12-04  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ScriptTest.java (ScriptTest): Check for proper exceptions
+	on missing file.  Add dirty test.
+
+2002-12-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/DynamicClassLoaderTest.java: Change method signature.
+	* script/ScriptTest.java: Add tests for proper nested operation.
+	
+2002-12-02  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ScriptTest.java (testSaveNestedScript): Add test for
+	nested script steps and relative directory behavior.
+
+2002-12-01  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/ScriptEditorTest.java: Use ScriptFixture.
+
+2002-11-30  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/JComboBoxRecorderTest.java (testDragSelection):
+	Add test for NPE bug.
+	* editor/recorder/AbstractRecorderTest.java: Always log.
+	* editor/recorder/AbstractSemanticRecorderTest.java: Ditto.
+	* editor/recorder/ComponentRecorderTest.java: Ditto.
+	* editor/recorder/EventRecorderTest.java: Ditto.
+	* editor/recorder/JComponentRecorderTest.java: Test action map
+	capture. 
+	* editor/recorder/JTextComponentRecorderTest.java: Test text
+	selection capture.
+	* editor/recorder/RecorderTestSuite.java: Add new tests.
+	
+2002-11-24  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/JComponentTesterTest.java: Add test for action map.
+	* tester/JTextComponentTesterTest.java: New.
+	
+2002-11-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/ComponentRecorderTest.java
+	(testRecordSpecialKeys): Avoid failing if the platform doesn't
+	generate KEY_TYPED events for special keys.
+
+	* editor/recorder/ComponentRecorderTest.java
+	(testRecordSpecialKeys): Ensure enter, backspace, et al. are
+	properly captured.
+
+2002-11-21  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/CallTest.java: New.
+	* script/ActionTest.java: New.
+	* editor/recorder/JTabbedPaneRecorderTest.java
+	(main): Was invoking the wrong class.
+
+2002-11-11  Timothy Wall  <twall@users.sourceforge.net>
+
+	* PlatformTest.java: Extract version number directly.
+
+2002-11-10  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java: Moved here from test package.
+	* PlatformTest.java: Use simplified versioning.
+	* tester/RobotTest.java: Ditto.
+	* util/AWTTest.java: New test.
+	* util/AllTests.java: Suite for util package.
+	
+2002-11-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/RobotTest.java: Add test for image compare.
+	
+2002-11-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/ImageComparatorTest.java (testImageCompare): Test image
+	comparator. 
+	* tester/image.gif, image.jpg: Support image comparison test.
+	
+2002-11-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/AbstractRecorderTest.java: Include both events
+	and steps on error messages.
+	* editor/recorder/AbstractSemanticRecorderTest.java:
+	Setup/teardown hierarchy events.
+	* editor/recorder/EventRecorderTest.java: Use refactored patterns
+	to run the recorder.
+	
+2002-10-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/RobotTest.java: Use toString of components, since
+	component toStrings are hard to read.
+	* editor/recorder/EventRecorderTest.java: Ensure proper handling
+	of TAB/shift+TAB.
+	* editor/recorder/ComponentRecorderTest.java: Add test for dialog
+	hide/show.   Note that dispose->show is incorrect usage and
+	doesn't produce events required for tracking a window.
+	* editor/ScriptModelTest.java (ScriptModelTest): New.  Test
+	movement/insertion. 
+
+2002-10-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ComponentReferenceTest.java (testAddSubDialog): Add test
+	against subdialog bug.  Make sure we find sub-dialogs when using a
+	component reference.
+
+2002-10-24  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/ComponentTesterTest.java: Ensure sub-dialogs work.
+	* DefaultComponentFinderTest.java: Ensure we find sub-dialogs.
+	
+2002-10-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/StepRunnerTest.java: Document expected event sequences 
+	(note the absence of step progress events, for now).
+
+2002-10-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/RecorderTestSuite.java,
+	script/ScriptTestSuite.java, tester/TesterTestSuite.java:
+	Use TestHelper to generate suites. 
+
+2002-10-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/ComponentRecorderTest.java: Enable modifier key
+	tests. 
+	* editor/recorder/EventRecorderTest.java: Update tests to expect
+	keystrings instead of multiple keystrokes.  Test stripping of
+	extraneous modifiers.
+	* tester/RobotTest.java: Test focus changes with both a single
+	frame and multiple frames.
+	
+2002-10-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/ComponentRecorderTest.java: Add InputMethod
+	tests. 
+	* editor/recorder/EventRecorderTest.java: Test modifier stripping.
+	* script/DynamicClassLoaderTest.java: Test bootstrap class loading.
+	* tester/RobotTest.java: Add keyString test (for generating
+	KEY_TYPED events).
+	
+2002-10-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ForkedScriptTest.java (testForkedFailure): Use full
+	method name. 
+
+2002-10-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ForkedScriptTest.java (testStepEncoding): Indexing
+	changed with addition of comments tracking.
+
+2002-09-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/KeyStrokeMapTest.java (main): Use TestHelper facility for
+	running one or more tests.
+	* tester/ComparatorTest.java (main): Ditto.
+	* tester/ArgumentParserTest.java (main): Ditto.
+	* script/ScriptTest.java (main): Ditto.
+	* script/ForkedScriptTest.java (main): Ditto.
+	* script/SequenceTest.java: New.
+	
+2002-09-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/ScriptTest.java: Add XML read/write and encoding tests.
+	
+2002-09-24  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/RobotTest.java (testAWTMenuSelection): Add AWT menu
+	selection verification.
+
+2002-09-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/RobotTest.java: Use numeric java version checking.
+
+2002-09-20  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/RobotTest.java (testClickTertiary): 1.4 no longer merges
+	CONTROL mask with tertiary button.
+
+	* script/ForkedScriptTest.java: New.
+	* script/ScriptTestSuite.java (main): New.
+	
+2002-09-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/*TesterTest.java (setUp): Get rid of more ComponentFinder
+	interdependencies. 
+	* editor/recorder/*RecorderTest.java (showTable): Ditto.
+
+2002-09-14  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/*RecorderTest.java (createRecorder): Remove
+	ComponentFinder linkage.
+
+2002-09-13  Timothy Wall  <twall@users.sourceforge.net>
+
+	* editor/recorder/WindowRecorderTest.java: New.
+	* script/DynamicClassLoaderTest.java: Refactor for TesterClassLoader.
+	* tester/TesterClassLoaderTest.java: Ditto.
+	
+2002-09-12  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/DynamicClassLoaderTest.java: Elucidate the behavior we
+	really want.
+	* tester/ComparatorTest.java: New.
+	* tester/ArgumentParserTest.java: Moved methods out.
+	* tester/*TesterTest.java: Propagate refactoring changes.
+	
+2002-09-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/DynamicClassLoaderTest.java (testContextClassLoading):
+	Add tests for event dispatch thread context and class exclusion.
+
+2002-09-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* recorder/ComponentRecorderTest.java(testRecordNoPopup): Fixed
+	this test which was not doing the right thing.
+
+2002-09-05  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/ComponentTesterTest.java (ComponentTesterTest): Factor
+	out some tests to ArgumentParserTest.
+	* tester/ArgumentParserTest.java (ArgumentParserTest): Add tests
+	for escaped characters.
+
+2002-09-05  Timothy Wall  <twall@users.sourceforge.net>
+
+	* recorder/RecorderTestSuite.java (suite): Add more tests.
+	* tester/TesterTestSuite.java (suite): Ditto.
+
+2002-09-05  Timothy Wall  <twall@users.sourceforge.net>
+
+	* recorder/JListRecorderTest.java:
+	* recorder/JTableRecorderTest.java:
+	* recorder/ComponentRecorderTest.java: Repeat individually-run
+	tests. 
+	* recorder/JTabbedPaneRecorderTest.java: Ditto.
+	* tester/JTreeTesterTest.java: New test for JTreeTester.
+	
+2002-08-30  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/ComponentTesterTest.java (testDoubleClick): Split double
+	click test.
+
+2002-08-30  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/FrameTesterTest.java (testClose): Add window close support.
+
+2002-08-29  Timothy Wall  <twall@users.sourceforge.net>
+
+	* test/RepeatHelper.java: Auto-generate repeated tests for
+	event-dependent tests.  Individual tests are highly stressed while
+	test case classes are moderately stressed.
+	* recorder/AbstractRecorderTest.java: Move repeated test
+	generation to a helper class.
+	* tester/*TesterTest.java: Use the repeated test helper class.
+	* recorder/*RecorderTest.java: Ditto.
+	* tester/JComboBoxTesterTest.java: New.  Test jcombo box actions.
+	* recorder/RecorderTestSuite.java: Use exported suite methods if
+	available. 
+	* tester/TesterTestSuite.java: Ditto.
+	* tester/*TesterTest.java: Provide a standard suite and test
+	repetition when run standalone.  This helps flush out intermittent
+	timing errors for individual classes without overburdening the
+	main test suites.
+	* tester/ComponentTesterTest.java: Moved some basic tests into
+	RobotTest.java: 
+	(testDoubleClick): Add bug workarounds for w32.
+	* tester/JListTesterTest.java: Bug workaround for w32 multi-click.
+	* tester/RobotTest.java: New. Test fundamental actions here.
+	Add Bug workarounds for w32.
+	* tester/AbbotHelper.java: Add an EventWatcher by default to
+	facilitate debugging event lists.  It'd be nice if there was a way
+	to automatically stick this in tester test failures.
+	
+2002-08-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/FrameTesterTest.java (testIconify): Fix error in w32 test
+	which left subsequent frames deactivated when shown (which means
+	events go elsewhere).
+	* tester/KeyStrokeMapTest.java: Moved here from test package.
+	* tester/ComponentTesterTest.java: Use new actionPopupMenuItem
+	signature. 
+	(testDoubleClick): Add double click test.
+	* recorder/EventRecorderTest.java: Remove activate recording test.
+	(testNumPad): Test with both NUMLOCK states.
+	* recorder/ComponentRecorderTest.java
+	(testRecordWhenComponentIsHidden): Add test for dialog closing in
+	response to a button click.
+
+2002-08-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/DynamicClassLoaderTest.java (DynamicClassLoaderTest): Add
+	tests for custom class path and boot class path.
+	* DefaultComponentFinderTest.java (main): Use
+	SwingUtilities.invokeLater instead of threads to invoke new
+	dialogs to avoid deadlock.
+	* recorder/AbstractRecorderTest.java: Abstract functionality for
+	EventRecorderTest and AbstractSemanticRecorderTest.
+	* recorder/ComponentRecroderTest.java: Disable some tests.
+	* recorder/EventRecorderTest.java: Refactored.
+	* recorder/JComboBoxRecorderTest.java,
+	JTabbedPaneRecorderTest.java: Don't need to implement
+	AWTEventListener. 
+	
+2002-08-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/Action.java: Change property name.
+	* recorder/AbstractSemanticRecorderTest.java (listEvents): Use
+	event mask from EventRecorder.  Save all events seen so they can
+	be included in the failure exception if the recording fails.
+	* recorder/ComponentRecorderTest.java: Disable faulty
+	activation/show/hide tests.  These need to be reworked, since they
+	don't really work cross-platform.  Added some modifier key tests,
+	but these are also disabled pending cross-platform checking.
+	
+2002-08-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/DynamicClassLoaderTest.java: Use proper ctors. 
+	* tester/FrameTesterTest.java (testIconify): Add
+	move/resize/iconify tests.
+
+2002-08-20  Timothy Wall  <twall@users.sourceforge.net>
+
+	* recorder/ComponentRecorderTest.java (ComponentRecorderTest): Add
+	test for no popup on component when recording.
+	* script/DynamicClassLoaderTest.java (main): Renamed from
+	LaunchedClassLoaderTest.java. 
+
+2002-08-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* tester/TesterTestSuite.java (suite): New.  Verify JTabbedPane
+	support. 
+
+2002-08-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* script/LaunchedClassLoaderTest.java: New.  Ensure
+	reloading works (at least cursorily).
+	* script/ScriptTest.java: Moved here from package test.
+	

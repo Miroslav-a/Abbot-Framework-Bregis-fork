@@ -1,0 +1,226 @@
+2003-04-30  Timothy Wall  <twall@oculustech.com>
+
+	* EventWatcher.java: Use EventNormalizer.
+
+2003-04-01  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java: Use robot to "reset" mouse.
+
+2002-11-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java: Provide simple dialog function.
+	(waitForShowing): Use window activate, not focus.
+	
+2002-11-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java: Provide window wait function.
+
+2002-11-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java (suite): Add Image/File comparator tests.
+
+2002-10-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java: Provide common window show/hide.  Don't need
+	wait for idle (focus has one).
+	* EditorTestSuite.java: Add ScriptModelTest.
+
+2002-10-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java: Use TestHelper to generate suites.
+
+2002-10-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* RepeatHelper.java (runTests): Optionally specify repeat count.
+
+2002-10-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* TestHelper.java: Provide a helper function to generate a test
+	suite from a list of classes.
+
+2002-09-26  Timothy Wall  <twall@users.sourceforge.net>
+
+ 	* AbbotHelper.java: Don't need a temp file for script.
+
+2002-09-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* *Test.java: Get rid of more ComponentFinder interdependencies.
+	* AbbotHelper.java (setUp): Ditto.
+
+2002-08-29  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java: Load exported suite methods if available.
+
+2002-08-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java (showFrame): Do swing stuff on swing thread.
+
+2002-08-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FrameworkTestSuite.java (suite): Move KeyStrokeMapTest.
+	
+2002-08-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Moved tester and recorder tests to their respective abbot packages.
+
+2002-08-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* *TestSuite.java (suite): Consolidate class lists for tests, to
+	make it simpler to add classes.
+	* ComponentRecorderTest.java: Derive from the abstract base class.
+	* AbstractSemanticRecorderTest.java: Base class for all semantic
+	recorder tests.
+	* JComboBoxRecorderTest.java (testCaptureSelection): New.
+
+2002-08-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java: Use a flow layout to facilitate adding several
+	components.  BorderLayout keeps replacing the center component by
+	default. 
+	* EventRecorderTest.java: Add tests for numeric keypad input.
+	* FullTestSuite.java: Build from other basic suites.
+	* FrameworkTestSuite.java, TesterTestSuite.java,
+	RecorderTestSuite.java: New.  Allow groups of tests to be run more
+	easily. 
+	* scripts/FontChooser/family-change.xml: Check font before and
+	after change.
+	
+2002-07-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java (findButton): Put utility function here...
+	* AbstractButtonTesterTest.java: ...from here.
+	* DefaultComponentFinderTest.java (testDuplicateJOptionPanes): Add
+	test for multiple identical JOptionPanes, find by title/name.
+
+2002-07-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* AbbotHelper.java (tearDown): Ensure all windows are cleaned up
+	after a test.
+	* EventRecorderTest.java (testSingleKey): Update generated actions.
+
+2002-07-14  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentTesterTest.java (setUp): Test default tag generation.
+	* DefaultComponentFinderTest.java (DefaultComponentFinderTest):
+	Add test for distilling names from AWT components.
+
+2002-07-11  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentTesterTest.java (testStripHTML): Add test for stripping
+	html. 
+
+2002-07-10  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FullTestSuite.java (suite): Add keystroke map test to full test
+	suite. 
+	* AbbotHelper.java (finder): Use factory method to obtain
+	ComponentFinder. 
+
+2002-07-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* KeyStrokeMapTest.java (testCharacterGeneration): New.  Test
+	character generation.
+
+2002-07-04  Timothy Wall  <twall@users.sourceforge.net>
+
+	* EventRecorderTest.java (testSingleKey): Verify no duplicate key
+	typed events are captured.
+
+2002-06-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ScreenMenuBarTest.java (testMenuBar): New.  Split out
+	OSX-specific test.
+	* FullTestSuite.java (suite): Update comments.
+
+2002-06-25  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentRecorderTest.java (initPopup): Make sure mouse listener
+	handles popups on mouse release.
+	* ComponentTesterTest.java (testClickAtWithButtons): Note that
+	popups on w32 are triggered on mouse release.
+	(initPopup): Make sure mouse listener handles popups on mouse
+	release. 
+	* AbstractButtonTesterTest.java (findButton): Fix bug in component
+	lookup indexing.
+	* EventRecorderTest.java (testModifier): Fixed match string for
+	key event.
+
+2002-06-24  Timothy Wall  <twall@users.sourceforge.net>
+
+	* DefaultComponentFinderTest.java (testNullParentDialog): Add test
+	for dialog lookups where the dialog has a null parent.
+	* ComponentTesterTest.java (testFrameShowingAssertion): Add test
+	for assertFrameShowing.  Add check for dialogs with null parent.
+
+2002-06-13  Timothy Wall  <twall@users.sourceforge.net>
+
+	* EventRecorderTest.java: Test for jumbled key input (fast typing
+	can produce this).  Also test for accuracy when KEY_TYPED events
+	aren't generated.
+
+2002-06-12  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FullTestSuite.java (suite): Add full test suite for test running
+	convenience. 
+	
+	* AbbotHelper.java: Always activate the frame, to simplify
+	testing.  Enforce a wait prior to checking if the frame is active.
+	* EventRecorderTest.java (testModifier): Add tests for keyboard
+	input. 
+	* ComponentRecorderTest.java: Warn, don't fail, if a window
+	dispose doesn't produce a DEACTIVATE.  Account for the possibilty
+	that the WM won't necessarily activate a dialog.  Extract text
+	field test display for general use.  Add test for recording a key
+	with a modifier.
+	Linux has some deactivate/activate behavior differences.  Throw
+	them as errors for now until I determine whether it's a bug.
+	* *TesterTest.java: Use showFrame instead of pack, show.
+	* README: New. Add testing notes.
+	
+2002-06-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentTesterTest.java: Add test for macos screen menu bar
+	(currently fails due to a java bug).
+
+2002-06-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* JTableTesterTest.java: New.  Verify JTableTester.
+
+2002-05-31  Timothy Wall  <twall@users.sourceforge.net>
+
+	* JListTesterTest.java (testScrollToVisibleIndex): Add list
+	selection/scroll test (kgirard).
+	* JComponentTesterTest.java (testScroll): Add scroll test. NOTE:
+	should probably use something that scrolls horizontally as well.
+
+2002-05-29  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentRecorderTest.java (eventDispatched): Test dialog
+	show/hide. 
+
+2002-05-28  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentRecorderTest.java: Fix tests to work properly on linux
+	x86 with pointer focus.  Split out explicit activate test.
+	(ComponentRecorderTest): Add hierarchy events to mask.  Enable
+	hierarchy events.  
+	(testRecordPopup): Remove debug logging.
+	* TesterTestHelper.java: Keep track of frame active state, since
+	you can't read it from the frame itself.
+	(MouseReset): Avoid task bar when resetting mouse.
+
+2002-05-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* EventRecorderTest.java: New.  Verify semantic capture operation.
+	* ComponentRecorderTest.java (testRecordDragDrop): Added drag/drop
+	tests.  Add test for ESC keystroke; bug on OS X prevents sending
+	this keystroke, so use alternate shift + space to terminate.
+	* TesterTestHelper.java: Add default resolver and tester
+	components, to facilitate semantic recorder operation.
+	
+2002-05-23  Timothy Wall  <twall@users.sourceforge.net>
+
+	* ComponentRecorderTest.java: Test repeated show/hide on window,
+	with and without dispose, since the event pattern for Windows
+	varies.  
+

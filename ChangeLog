@@ -1,0 +1,587 @@
+2012-01-30  Gerard Davison 
+        * Improve JTreeTester with check to see if component already selected, along with matching unit test
+
+2012-01-28  Gerard Davison 
+        * Check that the row was actually selected in JTreeTester, add unit test to make sure it fails properly
+          in this case
+        * Change the select/create reference key accelerator to a double tap on the CTRL key as it was getting
+          increasingly hard to find an accelerator that works accross all windows managers / platforms.
+
+2012-12-04  Gerard Davison 
+        * Better waitForIdle failure characteristics
+        * Comprehensive swing soak target
+        * Fixed problem with JInternalFrameTesterTest when running multiple test reps
+
+2012-11-28  Gerard Davison 
+        * Catch infinite loop from SunToolkit.realSync
+        * Increase timeout and allow some configuration
+
+2012-11-27  Gerard Davison 
+        * EDT violations in Focus code
+        * EDT violations in tests
+        * Use of SunToolkit.realSync to deal with intermittent failures and improved
+          waitForIdle reliability
+        * RawTestButtonTesterTest as test case for working with the JDK team.
+        * Reducd SLEEP_INTERVAL back to a much lower value
+        * If a FailedTest is a cause for another then the SystemState is copied over
+
+2012-11-12  Gerard Davison
+        * Interim checkin for test stability (To be revised as I work with the JDK team)
+        * increase SLEEP_INTERVAL to 100 to reduce intermittent ButtonTest failures
+        * ConditionalEDT wrapper now does toString on the event queue.
+
+2012-11-07  Gerard Davison
+        * ActionClick make sure component is enabeld before we try to click on it, with a wait
+        * Some more waits to make JComboBox more reliable
+        * Some more waits to make JList testing more reliable, include current workaround for missing selection
+             bug where we retry if we miss the first time. 
+
+2012-11-05  Gerard Davison
+        * Renamed WaitTimedOutError -> WaitTimedOutException and made extend FailedException for better
+          diagnostics
+        * assert calls are now performed on the EDT thread if they are to a method of a Component subclass
+
+2012-10-31  Gerard Davison
+        * Improved diagnostics on JTree selection failure
+        * Add support for customer renderers and lazy population of JComboBox
+        * Fixed possible EDT issues when working with action and input maps
+        * Fixed null pointer in logging when trying to get hold of unparented component
+        * Fixed EDT violation in ComponentTree
+
+2012-10-18  Minato Mamano
+        * Resolve issue with Applet Viewer on non en machines.
+
+2012-06-21  Gerard Davison
+        * Modify the toggleRow funcition in JTreeTester to temporaily up the number of clicks for a toggle to
+          5 so that we don't acidently trigger a double click listener.
+
+2012-06-11  Gerard Davison
+	* Provide better information for the user when we match multiple components to a single ComponentReference
+
+2012-05-25  Gerard Davison
+        * Resolve possible and actualy EDT violations in String Robot.getXXXXX methods as reported 
+          with internal testing.
+
+2012-05-18  Gerard Davison
+        * Work to resolve a stack overflow when using Costello to record in Netbeans, which it turns out
+          wasn't enough to make the fixes in 3495968. Basically getPopupMenu was causing all child
+          components to be added and removed, so I have modified the code to use reflection first of
+          all to get hold of the popupMenu field followed by getPopupMenu if it doesn't. This gives
+          a snapshot of the current structure of the UI whcih I think is the intent of the code. Future
+          work would be to put some kind of delay in for the ComponentTree to deal with a future packet
+          storm.
+        
+2012-05-15  Gerard Davison
+        * Added variable subsitution for the Launch step after user request
+
+2012-05-12  Gerard Davison
+
+        * Updated version number to 1.3.0RC1
+
+        * Added very basic cut/copy/paste clipboard support, don't support references from another file yet
+        * Added the ability to just delete a step
+        * Bug 3524725, using the incorrect version of actionClick when parameter is a number not a string
+           * sort methods so that we try to match boolean, primitives, Numbers, strings then any other object
+        
+        * RecordingFailedException, now uses standard cause property
+        * ScriptEditorFrame, a coupld of EDT violations in normal operation
+        * JTextComponentTester, unreliable selection on text that is not visible as drag doesn't happen when
+            text is offset to the end of the text field. [Removed as doesn't quite work]
+        * EDT violations in JTreeTester
+        * EDT violation in JComboxBoxTester
+        * EDT vioaltions in JTableTester
+        
+        * JDK 7 Fixes
+          * StringsTest failed on JDK 7, looks like a difference in classloading, using different property names
+            fixed the problems
+          * TreePath tests failed on JDK 7, you can no longer have a null root path
+          * AppClassLoaderTest, fixed tests to be more reliable under garbage collection
+          * FileDialogRecorderTest, fixed the difference in the returned strings on different platforms
+          * JTabbedPanelTester, not waiting for idle after tab click
+          * JTableTesterTest, EDT vioaltion causing test to intermittently fail
+          * WeakAWTEventListenerTest, gc code lead to unreliable test
+          * ComponentReference, failures due to inability to access parent reference correct. (Not sure why this
+              wasn't cauing a problem with JDK 6, should make things faster though)
+          * Added support for more recent JDK versions in the Platform class
+          
+          
+        TODO add tests for editor cut/copy/paste support
+        
+
+2012-04-26  Gerard Davison
+        * Make the code in JTreeLocation EDT safe
+
+2012-04-03  Gerard Davison
+	* Show the user an error dialog if the script file contains erros
+	* Rather than consume every key event make the CallStep editor wait for a little while
+          and coalasing similar events so that we don't hit the class loader too much
+        * Deal with an IllegalArgumentException when editing the class for an action step
+
+2012-03-13  Gerard Davison
+
+        * Minor fix in TestSelector for a null poiter when pressing "Select Test Suite...." button
+        
+2012-03-12  Gerard Davison
+
+        * Put in a fix for 3495968 to make Compact and AWTHierarchy more thread safe in order to help
+          Netbean evaluate abbot for testing purposes.
+        * Put in a fix to allow the menu code to try to re-open a menu if it fails the first time
+          as we are having a rash of intermittent failures caused by this.
+        * Make sure that makePathVisible on JTreeTester passes timeout to parent elements.
+
+2012-02-27  Gerard Davison
+
+        * Unreported issue where lazily populated to text field would sometime report an error in the
+          scroll to visible method, instead we can now wait until such a time that the model is complete
+
+
+2012-02-02  Gerard Davison
+
+        * Better waiting when maximizing and selecting top level menu items.
+        * Added JTextComponentTester.actionClick(comp,text) to make it easier to click on hyperlinks
+        * Made a bunch of JTextComponentTesterTests more reliable
+
+
+
+2012-01-20  Gerard Davison
+
+        * 3441155 Beanshell.source-like command needed for Groovy 
+        * 3476008 waitForIdle can time out with Java 1.7
+        * Extra debug infromation for ActionFailedException, threads, focus and AWT Tree.
+
+2011-12-19  Gerard Davison
+
+        * Misc bug fixes for unit test passing reliability
+        
+2011-12-12  Gerard Davison
+
+        * Added assertCellExists to JTableTester
+        * Removed old JPEG API's so that the code now compiles properly under JDK 7 3452425
+        * Added a test to cover long string case in bug 3441059
+        * Replace sun.awt code in EventDispatchExceptionHandler with 
+          more modern Thread.setUncaught... bug 3441725 
+
+2011-*-*    Gerard Davison
+
+        * updated abbot to 1.2RC to use modern API, require JDK 7
+        * integrating a whole heap of bug fixed from Oracle interal branch.
+
+2005-12-04  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Exclude tests from clover reports.
+
+2005-10-23  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Fix signing dependencies.
+
+2005-09-17  Timothy Wall  <twall@users.sf.net>
+
+	* Javadoc fixes (derek millar).
+	* build.xml: Include XML schema in javadoc links.
+
+2005-09-16  Timothy Wall  <twall@users.sf.net>
+
+	* **/*.html->**/*.shtml: Rename; move from frames to server-side
+	includes. 
+
+2005-06-03  Timothy Wall  <twall@users.sf.net>
+
+	* doc/abbot.xsd: Move this...
+	* src/abbot/abbot.xsd: ...here so eclipse can fumble for it.
+
+2005-05-07  Timothy Wall  <twall@users.sf.net>
+
+	* Ensure boolean flags read from multiple threads are marked volatile.
+
+2005-05-02  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Fix broken copy of non-java resources.
+
+2005-04-29  Timothy Wall  <twall@users.sf.net>
+
+	* Use ASCII properties files and move them to the source tree.  A
+	little more circuitous to edit, but makes them more accessible
+	from Eclipse.
+
+	The main thing I *don't* like about burying them in the source
+	tree is that that makes them less accessible to someone who would
+	like to edit them (the i18n dir at the top level is much more 
+	appropriate in that case).  I generally dislike burying resources
+	in with source code.
+
+2005-03-24  Gary Johnston, Tom Roche  <{gjohnsto, tlroche}@users.sf.net>
+
+	* abbot/build.xml targets={clean, eclipse} enable easier building of
+	eclipse plugin from source, and build binary plugin with source zip.
+
+2005-02-19  Timothy Wall  <twall@users.sf.net>
+
+	* Misc code cleanup.
+
+2005-01-13  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Exclude build of extensions if appropriate.
+
+2005-01-03  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Include CelsiusConverter properties.
+
+2004-11-11  Timothy Wall  <twall@users.sf.net>
+
+	* abbot.jnlp: Update to use new jars.
+
+2004-11-01  Timothy Wall  <twall@users.sf.net>
+
+	* lib/jdom.jar: Update to 1.0.
+
+2004-10-29  Timothy Wall  <twall@users.sf.net>
+
+	* Makefile (publish-reports): auto-archive test results.
+
+2004-09-03  Timothy Wall  <twall@users.sf.net>
+
+	* doc/abbot.xsd: Argument list is not required (heidl).
+
+2004-08-05  Timothy Wall  <twall@users.sf.net>
+
+	* doc/abbot.xsd: Add expression step.
+
+2004-07-21  Timothy Wall  <twall@users.sf.net>
+
+	* Makefile: Allow individual test report uploads.
+	* build.xml: Enable Clover test code coverage reports.  Clover
+	custom build gets its own build directory, to avoid futzing with
+	the main build.  Split properties between framework and editor.
+
+2004-06-18  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Fix typo preventing test sources from being included.
+
+2004-06-11  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Order execution of some tests.
+	
+2004-03-29  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Add junitreport task.
+	* doc/abbot.xsd: args is not required; missing attribute is
+	equivalent to no args.
+
+2004-03-03  Timothy Wall  <twall@users.sf.net>
+
+	* doc/abbot.xsd: Add missing borderTitle tag.
+
+2004-02-22  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Add abbot.robot.mode property for ant-launched unit tests.
+
+2004-02-18  Timothy Wall  <twall@users.sf.net>
+
+	* *.html: All html docs moved to doc directory; README.html split
+	out into different parts.
+
+2004-02-12  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Provide junit target which automatically collects
+	tests; store test results in platform/version specific directory.
+
+2004-02-09  Timothy Wall  <twall@users.sf.net>
+
+	* abbot.mf: Update junit in classpath.
+	* build.xml: Sign all jars on release.  Update junit ref.
+	
+2004-01-30  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Add abbot.finder.* packages to doc generation
+	(mbisping). 
+	* doc/abbot.xsd: Add "root" tag for component refs.
+	
+2004-01-14  Timothy Wall  <twall@users.sf.net>
+
+	* applet.xml: Don't need codebase tag.
+
+2003-12-20  Timothy Wall  <twall@users.sf.net>
+
+	* build.xml: Add rule to build eclipse plugin (tlroche).
+	* eclipse/*: eclipse plugin support (tlroche).
+	
+2003-11-16  Timothy Wall  <twall@users.sourceforge.net>
+
+	* FAQ.html: FAQ entry on xerces/validation from ckoelle.
+
+2003-11-16  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Reorganize build output.
+
+2003-08-28  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot.xsd: Launch *is* required to be first.  If you're
+	invoking more stuff, use a Call.  Launch has more associated
+	side-effects than a simple Call.
+
+2003-08-13  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot.xsd: Allow launch step anywhere.
+
+2003-08-12  Timothy Wall  <twall@users.sourceforge.net>
+
+	* abbot.jnlp: Refer to proper stubs file.
+
+2003-07-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot.xsd: Add more component reference attributes.
+
+2003-07-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot.xsd: Add vmargs (missing from schema).  Fix some
+	documentation. 
+
+2003-07-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot.xsd: Update of schema (ckoelle).
+	* build.xml: Include schema in jar file for script validation.
+	
+2003-07-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Update xerces.
+	* lib/xercesImpl.jar: New xerces jar.
+	* lib/xmlParserAPIs.jar: For JVM 1.3 compatibility.
+	
+2003-06-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Change name of source jarfile.
+
+2003-06-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/abbot-schema.html: HTML rendering of schema (ckoelle).
+	* doc/abbot.xsd: Abbot script schema (ckoelle).
+	* doc/abbot.dtd: Abbot script DTD (ckoelle).
+	
+	* build.xml: Use location, not value, for properties referring to
+	files/directories. 
+
+2003-06-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Experiment: make all imports explicit, hoping to accomplish the
+	following goals:
+	1) make apparent changes to class dependencies
+	2) make *all* class dependencies explicit, to offer a quick view into
+	cross-dependencies (which should be kept to a reasonable minimum). 
+	* Clean up javadoc to remove javadoc warnings.
+	
+2003-05-27  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Use native2ascii ant task.
+
+2003-05-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/Tutorial-2.html: Fix bugs in tutorial code.
+
+2003-05-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* extract-docs.sh: Damn w32 spaces in filenames.
+
+2003-05-14  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Ensure shell invocation works on w32 (ack).
+
+	* extract-doc.sh (dest): Auto-generate action argument
+	descriptions from javadoc.
+	* build.xml: Add doc extraction.
+	
+2003-05-10  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Only the dist target should depend on the version
+	stamping. 
+
+2003-05-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Fix date stamp (javajosh).
+
+2003-05-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Move more targets into ant build script.
+	* src/abbot/overview.html: Update docs.
+	* README.html: Update docs and links.
+	
+2003-04-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Add German translations.
+	* i18n/de_DE.txt: New (ckoelle).
+	
+2003-03-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Include manifests in source package.
+
+2003-01-09  Timothy Wall  <twall@users.sourceforge.net>
+
+	* doc/Tutorial-1.html: Add a few missing lines of code.
+
+2002-12-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* abbot.mf (Class-Path): Add apple-specific handlers.
+	* lib/MRJToolkitStubs.jar: New. 
+	
+2002-12-23  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (SRCZIP): Add i18n to source package.
+
+2002-12-16  Timothy Wall  <twall@users.sourceforge.net>
+
+	* README.html: Clarify record/test interactions.
+	* doc/Tutorial-2.html: Add 2nd tutorial.
+
+2002-12-10  Timothy Wall  <twall@users.sourceforge.net>
+
+	* README.html: Use MyCode as a starting example.
+
+2002-10-29  Timothy Wall  <twall@users.sourceforge.net>
+
+	* w32 cvs test.
+
+2002-10-18  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Add Italian (antonio-petrelli).
+
+2002-10-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Added Polish (pawel korbut), Japanese (sarif koichi).
+
+2002-10-10  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Add Russian translations (iryna z).
+
+2002-09-30  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Convert i18n files from native formats.
+	* lib/*.java: Sign jars, so that webstart can use them.
+	* i18n/fr_FR.txt: Convert to windows latin 1 encoding (Cp1252) to
+	facilitate editing. 
+	
+2002-09-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Add JDOM.
+	* abbot.mf: Ditto.
+	* lib/jdom-1.0b8.jar: Ditto.
+	
+2002-09-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Enable junit tests from ant script.
+
+2002-09-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Moved abbot.recorder package to abbot.editor.recorder.
+
+2002-09-06  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile: Move docs to doc/api.
+	* build.xml: Add links to junit and java javadocs.  Add target for
+	i18n properties.
+
+2002-09-02  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile: Include source in standard distro.
+
+2002-08-26  Timothy Wall  <twall@users.sourceforge.net>
+
+	* README.html (href): Update example paths.
+	* Makefile (abbot-doc-$(VERSION).tgz): Ensure "src/example" is saved
+	into tarball, instead of simply "example".
+
+2002-08-22  Timothy Wall  <twall@users.sourceforge.net>
+
+	* abbot.bat: Fix classpath (classpath now auto-included in abbot.jar)
+
+2002-08-21  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Update docs.
+
+2002-08-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Exclude tests from binary distribution and jar file.
+	* Makefile: Make an example jar to make running the examples easier.
+	Use class path in manifests to make running the editor and
+	examples easier.
+	
+2002-07-24  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (RCP): Include versioning in release packages.
+	* abbot.bat: w32 launch file for batch file fans.
+	
+2002-07-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* applet.html: HTML for use when running the simple applet script
+	under AppletViewer.
+
+2002-07-14  Timothy Wall  <twall@users.sourceforge.net>
+
+	* README.html: Download by version.
+	* Makefile (abbot.zip): Include icons in source package.
+
+2002-06-19  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (RCP): Add profile hooks.
+
+2002-06-12  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Use jikes, since dependency checking is good.
+	Include junit extension in jar file (oops).
+
+2002-06-04  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (abbot.jar): Use ANT to generate jar file and manifest.
+	* build.xml: Ditto.
+	* RELNOTES.html: Add notes for recent patches.
+
+2002-05-31  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (CASE): Make ant build rule work under linux.
+
+2002-05-31  Timothy Wall  <twall@users.sourceforge.net>
+
+	* build.xml: Build tests properly.
+
+2002-05-23  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile (abbot-doc.zip): Add ZIP files to export.
+	* build.xml: Use version-specific jars.
+	* lib/*: Add required jar files to CVS.
+	* README.html: Add screenshot and version number.
+
+2002-05-20  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Prepare for 0.6 release.  Source hierarchy more or less
+	standardized. 
+
+2002-05-08  Timothy Wall  <twall@users.sourceforge.net>
+
+	* example/scripts/FontChooser/size-change.xml: remove LAF reference.
+
+2002-04-07  Timothy Wall  <twall@users.sourceforge.net>
+
+	* example/FontChooserTest.java: Strip down to basics.
+	* example/MyCodeTest.java: Ditto.
+
+2002-04-03  Timothy Wall  <twall@users.sourceforge.net>
+
+	* example/FontChooserTest.java: Too problematic to use
+	setUp/tearDown.  Always use launch/terminate to set up GUI stuff.
+	* README.html: Provide step-by-step quickstart.
+
+2002-04-02  Timothy Wall  <twall@users.sourceforge.net>
+
+	* example/MyCodeTest.java (launch): Launch no longer requires
+	explicit threading.
+	* example/FontChooserTest.java (launch): Ditto.
+	
+2002-03-17  Timothy Wall  <twall@users.sourceforge.net>
+
+	* scripts/editor/startup: Updated.
+	* example/MyTestCase.java: Use launch/terminate pattern instead of
+	overloading setup/teardown.
+	* test/ScriptEditorTest.java: Ditto.
+	
+2002-03-15  Timothy Wall  <twall@users.sourceforge.net>
+
+	* Makefile: Make more platform independent
+
